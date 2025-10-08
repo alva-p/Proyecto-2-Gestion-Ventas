@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { LineaService } from './linea.service';
 import { CreateLineaDto } from './dto/create-linea.dto';
 import { UpdateLineaDto } from './dto/update-linea.dto';
@@ -32,11 +32,6 @@ export class LineaController {
       ...linea,
       cantidadProductos: linea.productos?.length || 0,
     };
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLineaDto: UpdateLineaDto) {
-    return this.lineaService.update(+id, updateLineaDto);
   }
 
   @Delete(':id')

@@ -25,8 +25,9 @@ export class LineaService {
     return this.lineaRepository.save(nuevaLinea);
   }
 
-  
-
+  update(id: number, updateLineaDto: UpdateLineaDto) {
+    return this.lineaRepository.update(id, updateLineaDto);
+  }
 
   remove(id: number) {
     return this.lineaRepository.delete(id);

@@ -24,4 +24,7 @@ export class Linea {
 
   @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
   marca: Marca;
+
+  @OneToMany(() => Producto, (producto) => producto.linea)
+  productos: Producto[];
 }
