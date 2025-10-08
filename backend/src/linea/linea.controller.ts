@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'; 
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { LineaService } from './linea.service';
 import { CreateLineaDto } from './dto/create-linea.dto';
 import { UpdateLineaDto } from './dto/update-linea.dto';
@@ -7,19 +7,36 @@ import { UpdateLineaDto } from './dto/update-linea.dto';
 export class LineaController {
   constructor(private readonly lineaService: LineaService) {}
 
-  @Get()
-  findAll() {
-    return this.lineaService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.lineaService.findOne(+id);
-  }
-
   @Post()
   create(@Body() createLineaDto: CreateLineaDto) {
     return this.lineaService.create(createLineaDto);
+  }
+
+  @Get()
+  async findAll() {
+    const lineas = await this.lineaService.findAll();
+    // Agregamos la cantidad de productos a cada línea
+    return lineas.map(linea => ({
+      ...linea,
+      cantidadProductos: linea.productos?.length || 0,
+    }));
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const linea = await this.lineaService.findOne(+id);
+    if (!linea) {
+      return { mensaje: `La línea con ID ${id} no existe` };
+    }
+    return {
+      ...linea,
+      cantidadProductos: linea.productos?.length || 0,
+    };
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateLineaDto: UpdateLineaDto) {
+    return this.lineaService.update(+id, updateLineaDto);
   }
 
   @Delete(':id')
@@ -32,4 +49,5 @@ export class LineaController {
   return this.lineaService.update(+id, updateLineaDto);
 }
 }
+
 

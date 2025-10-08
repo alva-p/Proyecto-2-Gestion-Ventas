@@ -13,11 +13,11 @@ export class LineaService {
   ) {}
 
   findAll() {
-    return this.lineaRepository.find({ relations: ['marca', 'productos'] });
+    return this.lineaRepository.find({ relations: ['marca'] });
   }
 
   findOne(id: number) {
-    return this.lineaRepository.findOne({ where: { id }, relations: ['marca', `productos`] });
+    return this.lineaRepository.findOne({ where: { id }, relations: ['marca'] });
   }
 
   create(createLineaDto: CreateLineaDto) {
@@ -25,15 +25,8 @@ export class LineaService {
     return this.lineaRepository.save(nuevaLinea);
   }
 
-  async update(id: number, updateLineaDto: UpdateLineaDto) {
-    const linea = await this.lineaRepository.findOne({ where: { id } });
-    if (!linea) {
-      throw new NotFoundException(`La línea con ID ${id} no existe`);
-    }
+  
 
-    Object.assign(linea, updateLineaDto);
-    return this.lineaRepository.save(linea);
-  }
 
   remove(id: number) {
     return this.lineaRepository.delete(id);

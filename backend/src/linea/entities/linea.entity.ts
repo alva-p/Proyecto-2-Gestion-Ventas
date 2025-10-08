@@ -13,21 +13,15 @@ export class Linea {
   @Column({ nullable: true })
   descripcion: string;
 
-  @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
-  marca: Marca;
-
-  @OneToMany(() => Producto, (producto) => producto.linea)
-  productos: Producto[];
-
-
   @Column({ default: 'activo' })
   estado: string;
 
-  
   @Column({ name: 'cantidad_productos', default: 0 })
   cantidadProductos: number;
 
-  
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fechaCreacion: Date;
+
+  @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
+  marca: Marca;
 }
