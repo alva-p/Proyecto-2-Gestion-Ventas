@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'; 
 import { LineaService } from './linea.service';
 import { CreateLineaDto } from './dto/create-linea.dto';
+import { UpdateLineaDto } from './dto/update-linea.dto';
 
 @Controller('lineas')
 export class LineaController {
@@ -25,5 +26,10 @@ export class LineaController {
   remove(@Param('id') id: string) {
     return this.lineaService.remove(+id);
   }
+  
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateLineaDto: UpdateLineaDto) {
+  return this.lineaService.update(+id, updateLineaDto);
+}
 }
 

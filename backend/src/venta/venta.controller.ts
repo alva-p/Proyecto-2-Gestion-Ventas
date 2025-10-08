@@ -1,34 +1,34 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { VentasService } from './ventas.service';
+import { VentaService } from './venta.service';
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
 
 @Controller('ventas')
-export class VentasController {
-  constructor(private readonly ventasService: VentasService) {}
+export class VentaController {
+  constructor(private readonly ventaService: VentaService) {}
 
   @Post()
   create(@Body() createVentaDto: CreateVentaDto) {
-    return this.ventasService.create(createVentaDto);
+    return this.ventaService.create(createVentaDto);
   }
 
   @Get()
   findAll() {
-    return this.ventasService.findAll();
+    return this.ventaService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.ventasService.findOne(+id);
+    return this.ventaService.findOne(+id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVentaDto: UpdateVentaDto) {
-    return this.ventasService.update(+id, updateVentaDto);
+    return this.ventaService.update(+id, updateVentaDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.ventasService.remove(+id);
+    return this.ventaService.remove(+id);
   }
 }

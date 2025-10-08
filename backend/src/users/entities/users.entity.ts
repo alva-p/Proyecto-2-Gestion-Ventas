@@ -1,0 +1,34 @@
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Rol } from 'src/rol/entities/rol.entity';
+
+@Entity('users')
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'varchar', length: 255 })
+  nombre: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  telefono: string;
+
+  @Column({ type: 'varchar', length: 255, unique: true })
+  correo: string;
+
+  @Column({ name: 'direccion_envio', type: 'varchar', length: 500, nullable: true })
+  direccionEnvio: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  contrasena: string;
+
+  @Column({ name: 'rol_id', type: 'int' })
+  rolId: number;
+
+  @Column({ type: 'boolean', default: true })
+  activo: boolean;
+
+  @ManyToOne(() => Rol, { eager: true })
+  @JoinColumn({ name: 'rol_id' })
+  rol: Rol;
+}
+

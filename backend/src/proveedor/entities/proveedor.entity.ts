@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Producto } from 'src/producto/entities/producto.entity';
 
 @Entity('proveedor')
 export class Proveedor {
@@ -25,4 +26,7 @@ export class Proveedor {
 
   @Column({ type: 'date', name: 'fecha_registro', default: () => 'CURRENT_DATE' })
   fechaRegistro: Date;
+
+  @ManyToMany(() => Producto, (producto) => producto.proveedores)
+  productos: Producto[];
 }

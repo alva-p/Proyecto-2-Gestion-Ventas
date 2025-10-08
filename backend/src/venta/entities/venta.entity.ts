@@ -1,4 +1,3 @@
-export class Venta {}
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,7 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { Usuario } from 'src/users/entities/user.entity';
+import { User } from 'src/users/entities/users.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
 
 @Entity('venta')
@@ -15,11 +14,11 @@ export class Venta {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.venta, { eager: true })
+  @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'usuario_id' })
-  usuario: Usuario;
+  usuario: User;
 
-  @ManyToOne(() => Producto, (producto) => producto.venta, { eager: true })
+  @ManyToOne(() => Producto, { eager: true })
   @JoinColumn({ name: 'producto_id' })
   producto: Producto;
 

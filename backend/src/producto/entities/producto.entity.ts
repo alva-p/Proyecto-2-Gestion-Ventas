@@ -24,13 +24,13 @@ export class Producto {
   @Column('decimal', { precision: 10, scale: 2 })
   precio: number;
 
-  @ManyToOne(() => Marca, (marca) => marca.productos, { eager: true })
+  @ManyToOne(() => Marca, { eager: true })
   marca: Marca;
 
-  @ManyToOne(() => Linea, (linea) => linea.productos, { eager: true })
+  @ManyToOne(() => Linea, { eager: true })
   linea: Linea;
 
-  @ManyToMany(() => Proveedor, (proveedor) => proveedor.producto)
+  @ManyToMany(() => Proveedor, (proveedor) => proveedor.productos)
   @JoinTable()
   proveedores: Proveedor[];
 
