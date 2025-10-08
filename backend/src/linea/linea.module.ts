@@ -3,9 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LineaService } from './linea.service';
 import { LineaController } from './linea.controller';
 import { Linea } from './entities/linea.entity';
+import { Marca } from 'src/marcas/entities/marca.entity';
+import { Producto } from 'src/producto/entities/producto.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Linea])],
+  imports: [TypeOrmModule.forFeature([Linea, Marca, Producto])],
   controllers: [LineaController],
   providers: [LineaService],
 })
