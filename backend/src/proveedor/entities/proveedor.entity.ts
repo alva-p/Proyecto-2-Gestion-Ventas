@@ -27,6 +27,7 @@ export class Proveedor {
   @Column({ type: 'date', name: 'fecha_registro', default: () => 'CURRENT_DATE' })
   fechaRegistro: Date;
 
+  // 👇 Relación N:N con producto
   @ManyToMany(() => Producto, (producto) => producto.proveedores)
   productos: Producto[];
 }

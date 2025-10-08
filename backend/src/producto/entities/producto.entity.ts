@@ -1,3 +1,4 @@
+//producto.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,12 +6,12 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import { Linea } from 'src/linea/entities/linea.entity';
 import { Proveedor } from 'src/proveedor/entities/proveedor.entity';
-import { Marca } from 'src/marcas/entities/marca.entity';
 
-@Entity('productos')
+@Entity('producto')
 export class Producto {
   @PrimaryGeneratedColumn()
   id: number;
@@ -24,14 +25,17 @@ export class Producto {
   @Column('decimal', { precision: 10, scale: 2 })
   precio: number;
 
-  @ManyToOne(() => Marca, { eager: true })
-  marca: Marca;
-
-  @ManyToOne(() => Linea, { eager: true })
+  @ManyToOne(() => Linea, (linea) => linea.productos, { eager: true })
+  @JoinColumn({ name: 'lineaId' }) // 👈 crea FK lineaId → linea.id
   linea: Linea;
 
-  @ManyToMany(() => Proveedor, (proveedor) => proveedor.productos)
-  @JoinTable()
+  // 👇 Relación N:N con proveedor
+  @ManyToMany(() => Proveedor, (proveedor) => proveedor.productos, { eager: true })
+  @JoinTable({
+    name: 'producto_proveedores', // 👈 nombre de la tabla intermedia
+    joinColumn: { name: 'productoId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'proveedorId', referencedColumnName: 'id' },
+  })
   proveedores: Proveedor[];
 
   @Column({ default: 0 })

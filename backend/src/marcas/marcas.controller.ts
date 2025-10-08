@@ -3,7 +3,7 @@ import { MarcasService } from './marcas.service';
 import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
 
-@Controller('marcas')
+@Controller('marca')
 export class MarcasController {
   constructor(private readonly marcasService: MarcasService) {}
 

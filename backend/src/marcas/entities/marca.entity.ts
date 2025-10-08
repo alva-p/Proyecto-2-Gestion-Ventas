@@ -1,9 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, OneToMany, JoinTable } from 'typeorm';
+//marca.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany} from 'typeorm';
 import { Linea } from 'src/linea/entities/linea.entity';
-import { Proveedor } from 'src/proveedor/entities/proveedor.entity';    
-import { Producto } from 'src/producto/entities/producto.entity';
 
-@Entity('marcas')
+@Entity('marca')
 export class Marca {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,7 +15,4 @@ export class Marca {
 
   @OneToMany(() => Linea, (linea) => linea.marca)
   lineas: Linea[];
-
-  @OneToMany(() => Producto, (producto) => producto.marca)
-  productos: Producto[];
 }

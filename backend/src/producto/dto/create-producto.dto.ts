@@ -12,14 +12,11 @@ export class CreateProductoDto {
   precio: number;
 
   @IsNumber()
-  marcaId: number;
-
-  @IsNumber()
   lineaId: number;
 
   @IsOptional()
   @IsNumber({}, { each: true })
-  proveedoresIds?: number[];
+  proveedorId?: number[];
 
   @IsOptional()
   @IsNumber()

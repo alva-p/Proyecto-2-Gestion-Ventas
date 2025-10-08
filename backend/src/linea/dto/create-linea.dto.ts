@@ -1,7 +1,17 @@
 import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateLineaDto {
-    nombre: string;
-    descripcion: string;
-    marcaId: number;
+  @IsString()
+  nombre: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
+
+  @IsNumber()
+  marcaId: number;
+
+  @IsOptional()
+  @IsString()
+  estado?: string;
 }

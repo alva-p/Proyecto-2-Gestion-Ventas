@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from 'src/users/entities/users.entity';
 
 @Entity('auditoria')
 export class Auditoria {
@@ -22,4 +23,8 @@ export class Auditoria {
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   estado: string;
+
+  @ManyToOne(() => User, (user) => user.auditorias, { eager: true })
+  @JoinColumn({ name: 'usuario_id' })
+  usuario: User;
 }

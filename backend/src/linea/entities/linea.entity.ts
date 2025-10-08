@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+//linea.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Marca } from 'src/marcas/entities/marca.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
 
-@Entity()
+@Entity('linea')
 export class Linea {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,6 +24,7 @@ export class Linea {
   fechaCreacion: Date;
 
   @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
+  @JoinColumn({ name: 'marcaId' }) // 👈 agrega FK marcaId en la tabla línea
   marca: Marca;
 
   @OneToMany(() => Producto, (producto) => producto.linea)
