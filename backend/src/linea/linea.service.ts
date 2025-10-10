@@ -20,8 +20,22 @@ export class LineaService {
     return this.lineaRepository.findOne({ where: { id }, relations: ['marca'] });
   }
 
-  create(createLineaDto: CreateLineaDto) {
-    const nuevaLinea = this.lineaRepository.create(createLineaDto);
+  async create(createLineaDto: CreateLineaDto) {
+    const { marcaId, ...resto } = createLineaDto;
+  
+    // Buscar la marca correspondiente
+    const marca = await this.lineaRepository.manager.findOne('Marca', { where: { id: marcaId } });
+  
+    if (!marca) {
+      throw new Error(`La marca con ID ${marcaId} no existe`);
+    }
+  
+    // Crear la nueva línea vinculada a la marca
+    const nuevaLinea = this.lineaRepository.create({
+      ...resto,
+      marca,
+    });
+  
     return this.lineaRepository.save(nuevaLinea);
   }
 
