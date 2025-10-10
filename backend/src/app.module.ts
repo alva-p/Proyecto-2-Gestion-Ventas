@@ -31,18 +31,25 @@ import { Marca } from './marcas/entities/marca.entity';
     }),
 
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
-      autoLoadEntities: true,
-      synchronize: false,
-      ssl: { rejectUnauthorized: false },
-      extra: { max: 5 },
-    }),
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '6543', 10),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
+  autoLoadEntities: true,
+  synchronize: false,
+  ssl: { rejectUnauthorized: false },
+  extra: {
+    max: 3,                    // menos conexiones simultáneas
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 2000,   // cierra las inactivas rápido
+    keepAlive: false,          // no mantiene conexiones persistentes
+    statement_timeout: 10000,  // evita queries largas
+  },
+}),
+
 
     // Módulos de tu aplicación
     ProductoModule,
