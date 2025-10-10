@@ -58,9 +58,34 @@ export class ProductoService {
 
   async update(id: number, dto: UpdateProductoDto): Promise<Producto> {
     const producto = await this.findOne(id);
-    const actualizado = Object.assign(producto, dto);
-    return this.productoRepository.save(actualizado);
+    // Desestructuramos los posibles cambios
+    const { lineaId, proveedorId, ...resto } = dto;
+  
+    // Si viene lineaId, buscamos la nueva línea
+    if (lineaId) {
+      const nuevaLinea = await this.lineaRepository.findOne({ where: { id: lineaId } });
+      if (!nuevaLinea) throw new NotFoundException(`La línea con ID ${lineaId} no existe`);
+      producto.linea = nuevaLinea;
+    }
+  
+    // Si vienen proveedores, los buscamos
+    if (proveedorId && proveedorId.length > 0) {
+      const nuevosProveedores = await this.proveedorRepository.findByIds(proveedorId);
+      producto.proveedores = nuevosProveedores;
+    }
+  
+    // Asignamos los demás campos
+    Object.assign(producto, resto);
+  
+    const actualizado = await this.productoRepository.save(producto);
+  
+    // Volvemos a traer el producto con todas sus relaciones actualizadas
+    return (await this.productoRepository.findOne({
+      where: { id: actualizado.id },
+      relations: ['linea', 'proveedores'],
+    }))!;    
   }
+  
 
   async remove(id: number): Promise<void> {
     const producto = await this.findOne(id);
