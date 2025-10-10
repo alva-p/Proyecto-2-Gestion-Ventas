@@ -39,7 +39,7 @@ import { Marca } from './marcas/entities/marca.entity';
       database: process.env.DB_NAME,
       entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       ssl: { rejectUnauthorized: false },
       extra: { max: 5 },
     }),
