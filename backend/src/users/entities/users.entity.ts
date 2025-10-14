@@ -16,9 +16,6 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   correo: string;
 
-  @Column({ name: 'direccion_envio', type: 'varchar', length: 500, nullable: true })
-  direccionEnvio: string;
-
   @Column({ type: 'varchar', length: 255 })
   contrasena: string;
 
@@ -30,7 +27,6 @@ export class User {
   rol: Rol;
 
   @OneToMany(() => Auditoria, (auditoria) => auditoria.usuario)
-  @JoinColumn({ name: 'auditoria' })
   auditorias: Auditoria[];
 }
 

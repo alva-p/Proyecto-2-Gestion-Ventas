@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Linea } from 'src/linea/entities/linea.entity';
 import { Proveedor } from 'src/proveedor/entities/proveedor.entity';
+import { Venta } from 'src/venta/entities/venta.entity';
 
 @Entity('producto')
 export class Producto {
@@ -43,4 +44,8 @@ export class Producto {
 
   @Column({ default: true })
   estado: boolean; // true = activo, false = inactivo
+
+  // 👇 Relación N:N con Venta
+  @ManyToMany(() => Venta, (venta) => venta.productos)
+  venta: Venta[];
 }

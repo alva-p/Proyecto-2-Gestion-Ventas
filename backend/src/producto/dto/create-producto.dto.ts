@@ -18,7 +18,7 @@ export class CreateProductoDto {
   @IsNumber({}, { each: true })
   proveedorId?: number[];
 
-  @IsOptional()
+  @IsOptional()q
   @IsNumber()
   @Min(0)
   stock?: number;
