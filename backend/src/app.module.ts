@@ -8,7 +8,7 @@ import { ProveedorModule } from './proveedor/proveedor.module';
 import { UsersModule } from './users/users.module';
 import { VentaModule } from './venta/venta.module';
 import { AuthModule } from './auth/auth.module';
-import { RolModule } from './rol/rol.module';
+import { RolesModule } from './rol/rol.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { LineaModule } from './linea/linea.module';
 import { MarcasModule } from './marcas/marcas.module';
@@ -50,7 +50,7 @@ import { Marca } from './marcas/entities/marca.entity';
     UsersModule,
     VentaModule,
     AuthModule,
-    RolModule,
+    RolesModule,
     AuditoriaModule,
     LineaModule,
     MarcasModule,

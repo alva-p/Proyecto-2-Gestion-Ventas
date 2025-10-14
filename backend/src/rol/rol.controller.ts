@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RolService } from './rol.service';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { RolesService } from './rol.service';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 
 @Controller('roles')
-export class RolController {
-  constructor(private readonly rolService: RolService) {}
+export class RolesController {
+  constructor(private readonly rolesService: RolesService) {}
 
   @Post()
   create(@Body() createRolDto: CreateRolDto) {
-    return this.rolService.create(createRolDto);
+    return this.rolesService.create(createRolDto);
   }
 
   @Get()
   findAll() {
-    return this.rolService.findAll();
+    return this.rolesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.rolService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.rolesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRolDto: UpdateRolDto) {
-    return this.rolService.update(+id, updateRolDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateRolDto: UpdateRolDto) {
+    return this.rolesService.update(id, updateRolDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.rolService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.rolesService.remove(id);
   }
 }

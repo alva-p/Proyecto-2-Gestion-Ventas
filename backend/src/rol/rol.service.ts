@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rol } from './entities/rol.entity';
@@ -6,35 +6,50 @@ import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 
 @Injectable()
-export class RolService {
+export class RolesService {
   constructor(
     @InjectRepository(Rol)
     private readonly rolRepository: Repository<Rol>,
   ) {}
 
-  create(createRolDto: CreateRolDto) {
-    const rol = this.rolRepository.create(createRolDto);
+  async create(dto: CreateRolDto): Promise<Rol> {
+    const existe = await this.rolRepository.findOne({ where: { nombre: dto.nombre } });
+    if (existe) {
+      throw new BadRequestException(`El rol "${dto.nombre}" ya existe.`);
+    }
+
+    const rol = this.rolRepository.create(dto);
     return this.rolRepository.save(rol);
   }
 
-  findAll() {
-    return this.rolRepository.find();
+  async findAll(): Promise<Rol[]> {
+    return this.rolRepository.find({ order: { id: 'ASC' } });
   }
 
-  findOne(id: number) {
-    return this.rolRepository.findOneBy({ id });
-  }
-
-  async update(id: number, updateRolDto: UpdateRolDto) {
-    await this.rolRepository.update(id, updateRolDto);
-    return this.rolRepository.findOneBy({ id });
-  }
-
-  async remove(id: number) {
-    const rol = await this.rolRepository.findOneBy({ id });
+  async findOne(id: number): Promise<Rol> {
+    const rol = await this.rolRepository.findOne({ where: { id } });
     if (!rol) {
-      throw new Error(`Rol con id ${id} no encontrado`);
+      throw new NotFoundException(`Rol con ID ${id} no encontrado.`);
     }
-    return this.rolRepository.remove(rol);
+    return rol;
+  }
+
+  async update(id: number, dto: UpdateRolDto): Promise<Rol> {
+    const rol = await this.findOne(id);
+
+    if (dto.nombre && dto.nombre !== rol.nombre) {
+      const existeNombre = await this.rolRepository.findOne({ where: { nombre: dto.nombre } });
+      if (existeNombre) {
+        throw new BadRequestException(`Ya existe un rol con el nombre "${dto.nombre}".`);
+      }
+    }
+
+    Object.assign(rol, dto);
+    return this.rolRepository.save(rol);
+  }
+
+  async remove(id: number): Promise<void> {
+    const rol = await this.findOne(id);
+    await this.rolRepository.remove(rol);
   }
 }

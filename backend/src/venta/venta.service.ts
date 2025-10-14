@@ -44,18 +44,51 @@ export class VentaService {
     return this.ventaRepository.save(venta);
   }
 
-  async findAll(): Promise<Venta[]> {
-    return this.ventaRepository.find({
-      relations: ['productos', 'usuario'],
-      order: { id: 'DESC' },
-    });
+  async findAll(): Promise<any[]> {
+    return this.ventaRepository
+      .createQueryBuilder('venta')
+      .leftJoinAndSelect('venta.usuario', 'usuario')
+      .leftJoinAndSelect('venta.productos', 'producto')
+      .select([
+        'venta.id',
+        'venta.fecha',
+        'venta.importe_total',
+        'venta.notas',
+        'usuario.id',
+        'usuario.nombre',
+        'usuario.correo',
+        'producto.id',
+        'producto.nombre',
+        'producto.precio',
+      ])
+      .orderBy('venta.id', 'DESC')
+      .getMany();
   }
 
-  async findOne(id: number): Promise<Venta> {
-    const venta = await this.ventaRepository.findOne({ where: { id } });
+  async findOne(id: number): Promise<any> {
+    const venta = await this.ventaRepository
+      .createQueryBuilder('venta')
+      .leftJoinAndSelect('venta.usuario', 'usuario')
+      .leftJoinAndSelect('venta.productos', 'producto')
+      .select([
+        'venta.id',
+        'venta.fecha',
+        'venta.importe_total',
+        'venta.notas',
+        'usuario.id',
+        'usuario.nombre',
+        'usuario.correo',
+        'producto.id',
+        'producto.nombre',
+        'producto.precio',
+      ])
+      .where('venta.id = :id', { id })
+      .getOne();
+
     if (!venta) throw new NotFoundException(`Venta ${id} no encontrada`);
     return venta;
   }
+
 
   async update(id: number, updateVentaDto: UpdateVentaDto): Promise<Venta> {
     const venta = await this.findOne(id);
