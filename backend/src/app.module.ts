@@ -39,9 +39,14 @@ import { Marca } from './marcas/entities/marca.entity';
       database: process.env.DB_NAME,
       entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       ssl: { rejectUnauthorized: false },
-      extra: { max: 5 },
+      extra: { max: 5,
+        connectionTimeoutMillis: 5000, // espera corta
+        idleTimeoutMillis: 2000, // corta inactivas rápido
+        keepAlive: false, // no mantiene sockets abiertos
+        statement_timeout: 10000, // mata queries muy largas
+       },
     }),
 
     // Módulos de tu aplicación
