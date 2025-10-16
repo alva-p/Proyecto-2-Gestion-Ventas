@@ -10,7 +10,7 @@ import { ProveedorModule } from './proveedor/proveedor.module';
 import { UsersModule } from './users/users.module';
 import { VentaModule } from './venta/venta.module';
 import { AuthModule } from './auth/auth.module';
-import { RolModule } from './rol/rol.module';
+import { RolesModule } from './rol/rol.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { LineaModule } from './linea/linea.module';
 import { MarcasModule } from './marcas/marcas.module';
@@ -52,15 +52,14 @@ import { Marca } from './marcas/entities/marca.entity';
         Marca,
       ],
       autoLoadEntities: true,
-      synchronize: false, // el pooler no permite DDL (no crear/modificar tablas)
+      synchronize: false,
       ssl: { rejectUnauthorized: false },
-      extra: {
-        max: 3, // pocas conexiones simultáneas = más estable con el pooler
+      extra: { max: 5,
         connectionTimeoutMillis: 5000, // espera corta
         idleTimeoutMillis: 2000, // corta inactivas rápido
         keepAlive: false, // no mantiene sockets abiertos
         statement_timeout: 10000, // mata queries muy largas
-      },
+       },
     }),
 
     // 🔹 Módulos de tu aplicación
@@ -69,7 +68,7 @@ import { Marca } from './marcas/entities/marca.entity';
     UsersModule,
     VentaModule,
     AuthModule,
-    RolModule,
+    RolesModule,
     AuditoriaModule,
     LineaModule,
     MarcasModule,

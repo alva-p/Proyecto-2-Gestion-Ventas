@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Rol } from 'src/rol/entities/rol.entity';
-import { Auditoria } from 'src/auditoria/entities/auditoria.entity';
 
 @Entity('users')
 export class User {
@@ -16,9 +15,6 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   correo: string;
 
-  @Column({ name: 'direccion_envio', type: 'varchar', length: 500, nullable: true })
-  direccionEnvio: string;
-
   @Column({ type: 'varchar', length: 255 })
   contrasena: string;
 
@@ -28,9 +24,5 @@ export class User {
   @ManyToOne(() => Rol, { eager: true })
   @JoinColumn({ name: 'rol_id' })
   rol: Rol;
-
-  @OneToMany(() => Auditoria, (auditoria) => auditoria.usuario)
-  @JoinColumn({ name: 'auditoria' })
-  auditorias: Auditoria[];
 }
 

@@ -23,8 +23,4 @@ export class Auditoria {
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   estado: string;
-
-  @ManyToOne(() => User, (user) => user.auditorias, { eager: true })
-  @JoinColumn({ name: 'usuario_id' })
-  usuario: User;
 }

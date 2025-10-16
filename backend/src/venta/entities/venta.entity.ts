@@ -5,6 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from 'src/users/entities/users.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
@@ -18,9 +20,17 @@ export class Venta {
   @JoinColumn({ name: 'usuario_id' })
   usuario: User;
 
-  @ManyToOne(() => Producto, { eager: true })
-  @JoinColumn({ name: 'producto_id' })
-  producto: Producto;
+  // 👇 Relación N:N con Producto
+  @ManyToMany(() => Producto, (productos) => productos.venta, { eager: true })
+  @JoinTable({
+    name: 'venta_producto', // 👈 nombre de la tabla intermedia
+    joinColumn: { name: 'ventaId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'productoId', referencedColumnName: 'id' },
+  })
+  productos: Producto[];
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  importe_total: number;
 
   @Column({ type: 'text', nullable: true })
   notas: string;
