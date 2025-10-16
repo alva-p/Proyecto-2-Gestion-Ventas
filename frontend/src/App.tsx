@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import { Toaster } from './components/ui/sonner';
+import API from './index'; // o la ruta correcta
 
 type User = {
   id: string;
@@ -17,23 +18,25 @@ type User = {
 function AuthRoutes({ currentUser, setCurrentUser }: { currentUser: User | null; setCurrentUser: (user: User | null) => void }) {
   const navigate = useNavigate();
 
-  const handleLogin = (email: string, _password: string) => {
-    if (email.includes('auditor')) {
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      // Llama al backend NestJS
+      const res = await API.post('/auth/login', { correo: email, contrasena: password });
+      // Guarda el token JWT en el navegador
+      localStorage.setItem('token', res.data.access_token);
+      // Actualiza el usuario logueado en tu estado global
       setCurrentUser({
-        id: '2',
-        name: 'Administrador de Auditoría',
-        email: email,
-        role: 'auditor'
+        id: res.data.user.id,
+        name: res.data.user.nombre,
+        email: res.data.user.correo,
+        role: res.data.user.rol.nombre
       });
-    } else {
-      setCurrentUser({
-        id: '1',
-        name: 'Administrador',
-        email: email,
-        role: 'admin'
-      });
+      // Redirige al dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      // Si el login falla, muestra un mensaje de error
+      alert('Credenciales incorrectas');
     }
-    navigate('/dashboard');
   };
 
   const handleLogout = () => {
@@ -41,14 +44,20 @@ function AuthRoutes({ currentUser, setCurrentUser }: { currentUser: User | null;
     navigate('/login');
   };
 
-  const handleRegister = (userData: { name: string; email: string }) => {
-    setCurrentUser({
-      id: '4',
-      name: userData.name,
-      email: userData.email,
-      role: 'admin'
-    });
-    navigate('/dashboard');
+  const handleRegister = async (userData: { name: string; email: string; password: string; rol_id: number }) => {
+    try {
+      // Llama al backend NestJS
+      await API.post('/auth/register', {
+        nombre: userData.name,
+        correo: userData.email,
+        contrasena: userData.password
+      });
+      // Puedes loguear automáticamente o redirigir al login
+      alert('Registro exitoso, ahora inicia sesión');
+      navigate('/login');
+    } catch (error) {
+      alert('Error al registrar usuario');
+    }
   };
 
   return (

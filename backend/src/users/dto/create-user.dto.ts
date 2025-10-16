@@ -5,8 +5,9 @@ export class CreateUserDto {
   @IsString()
   nombre: string;
 
+  @IsOptional()
   @IsString()
-  telefono: string;
+  telefono?: string; 
 
   @IsEmail()
   correo: string;
@@ -20,6 +21,6 @@ export class CreateUserDto {
   activo?: boolean;
 
   @IsInt()
-  @Type(() => Number)
+  @Type(() => Number) // ?????????????????????
   rol_id: number;
 }
