@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
+// Módulos de tu aplicación
 import { ProductoModule } from './producto/producto.module';
 import { ProveedorModule } from './proveedor/proveedor.module';
 import { UsersModule } from './users/users.module';
@@ -13,7 +15,7 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
 import { LineaModule } from './linea/linea.module';
 import { MarcasModule } from './marcas/marcas.module';
 
-// (Opcional) importaciones de entidades si querés mantener control manual
+// Entidades (control manual opcional)
 import { Producto } from './producto/entities/producto.entity';
 import { Proveedor } from './proveedor/entities/proveedor.entity';
 import { User } from './users/entities/users.entity';
@@ -25,11 +27,13 @@ import { Marca } from './marcas/entities/marca.entity';
 
 @Module({
   imports: [
+    // ✅ Carga global del ConfigModule
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: false, // ✅ en local usa .env; en Render se ignora automáticamente
+      ignoreEnvFile: false, // usa .env localmente; Render usa variables de entorno
     }),
 
+    // ✅ Conexión estable para Supabase (puerto 6543 con pooler)
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -37,9 +41,19 @@ import { Marca } from './marcas/entities/marca.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
+      entities: [
+        Producto,
+        Proveedor,
+        User,
+        Venta,
+        Rol,
+        Auditoria,
+        Linea,
+        Marca,
+      ],
       autoLoadEntities: true,
-      synchronize: false,
+      migrations: ['dist/migrations/*.js'],
+      synchronize: true,
       ssl: { rejectUnauthorized: false },
       extra: { max: 5,
         connectionTimeoutMillis: 5000, // espera corta
@@ -49,7 +63,7 @@ import { Marca } from './marcas/entities/marca.entity';
        },
     }),
 
-    // Módulos de tu aplicación
+    // 🔹 Módulos de tu aplicación
     ProductoModule,
     ProveedorModule,
     UsersModule,

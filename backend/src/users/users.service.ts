@@ -33,7 +33,7 @@ export class UsersService {
       correo: dto.correo,
       contrasena: hash,
       activo: dto.activo ?? true,
-      rol,
+      rol, // Crear rol preterminado
     });
 
     return this.userRepository.save(nuevoUsuario);

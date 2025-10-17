@@ -29,7 +29,7 @@ export class Venta {
   })
   productos: Producto[];
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
   importe_total: number;
 
   @Column({ type: 'text', nullable: true })
