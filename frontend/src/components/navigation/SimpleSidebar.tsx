@@ -135,12 +135,12 @@ export function SimpleSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen bg-card border-r transition-all duration-300 ease-in-out",
+          "fixed left-0 top-0 z-40 h-screen bg-card border-r transition-all duration-300 ease-in-out flex flex-col",
           isOpen ? "w-64" : "w-16"
         )}
       >
         {/* Header */}
-        <div className="flex flex-col border-b p-4">
+        <div className="flex flex-col border-b p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             {isOpen && (
               <div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ export function SimpleSidebar({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
           {sections.map((section) => (
             <div key={section.group}>
               {isOpen && (
@@ -200,7 +200,7 @@ export function SimpleSidebar({
         </nav>
 
         {/* Footer */}
-        <div className="border-t p-4 space-y-3">
+        <div className="border-t p-4 space-y-3 flex-shrink-0">
           {isOpen && (
             <div className="flex items-center space-x-2 text-sm">
               <User className="w-4 h-4 shrink-0" />

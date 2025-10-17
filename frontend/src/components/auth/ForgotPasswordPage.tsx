@@ -56,14 +56,6 @@ export function ForgotPasswordPage({ onNavigateToLogin }: ForgotPasswordPageProp
             
             <div className="mt-6 space-y-3">
               <Button 
-                onClick={simulateEmailClick}
-                variant="outline"
-                className="w-full"
-              >
-                Simular clic en enlace del correo
-              </Button>
-              
-              <Button 
                 onClick={onNavigateToLogin}
                 variant="ghost"
                 className="w-full"

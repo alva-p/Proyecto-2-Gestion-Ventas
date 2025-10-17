@@ -121,8 +121,8 @@ export function AppSidebar({ user, activeSection, onSectionChange, onLogout }: A
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b p-4">
+    <Sidebar collapsible="icon" className="border-r" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <SidebarHeader className="border-b p-4" style={{ flexShrink: 0 }}>
         <div className="flex items-center space-x-3">
           <ShoppingBag className="w-8 h-8 text-primary" />
           <div className="flex flex-col">
@@ -135,7 +135,7 @@ export function AppSidebar({ user, activeSection, onSectionChange, onLogout }: A
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {sections.map((section) => (
           <SidebarGroup key={section.group}>
             <SidebarGroupLabel>{section.group}</SidebarGroupLabel>
@@ -159,7 +159,7 @@ export function AppSidebar({ user, activeSection, onSectionChange, onLogout }: A
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t p-4" style={{ flexShrink: 0 }}>
         <div className="space-y-3">
           <div className="flex items-center space-x-2 text-sm">
             <User className="w-4 h-4" />

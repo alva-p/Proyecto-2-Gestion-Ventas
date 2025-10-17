@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -291,6 +291,635 @@ const mockProducts: Product[] = [
   },
 ];
 
+// Componente ProductForm separado para evitar re-renders
+type ProductFormProps = {
+  onSubmit: (e: React.FormEvent) => void;
+  isEdit?: boolean;
+  newProduct: {
+    name: string;
+    description: string;
+    brandId: string;
+    lineId: string;
+    price: string;
+    stock: string;
+    status: "active" | "inactive" | "draft";
+  };
+  setNewProduct: React.Dispatch<React.SetStateAction<{
+    name: string;
+    description: string;
+    brandId: string;
+    lineId: string;
+    price: string;
+    stock: string;
+    status: "active" | "inactive" | "draft";
+  }>>;
+  productImages: ProductImage[];
+  productSuppliers: ProductSupplier[];
+  newImageUrl: string;
+  setNewImageUrl: React.Dispatch<React.SetStateAction<string>>;
+  uploadedImageFile: File | null;
+  setUploadedImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+  imageValidationError: string;
+  setImageValidationError: React.Dispatch<React.SetStateAction<string>>;
+  imageFileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleImageFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  clearUploadedImageFile: () => void;
+  newSupplierData: { supplierId: string; supplierCode: string };
+  setNewSupplierData: React.Dispatch<React.SetStateAction<{ supplierId: string; supplierCode: string }>>;
+  activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  handleLineChange: (lineId: string) => void;
+  getAvailableBrands: (lineId: string) => Brand[];
+  addImage: () => void;
+  removeImage: (imageId: string) => void;
+  setPrimaryImage: (imageId: string) => void;
+  moveImage: (imageId: string, direction: "up" | "down") => void;
+  addSupplier: () => void;
+  removeSupplier: (supplierId: string) => void;
+  getStatusBadge: (status: string) => React.ReactElement;
+  formatCurrency: (amount: number) => string;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+  resetForm: () => void;
+};
+
+const ProductFormComponent = React.memo<ProductFormProps>(({
+  onSubmit,
+  isEdit = false,
+  newProduct,
+  setNewProduct,
+  productImages,
+  productSuppliers,
+  newImageUrl,
+  setNewImageUrl,
+  uploadedImageFile,
+  setUploadedImageFile,
+  imageValidationError,
+  setImageValidationError,
+  imageFileInputRef,
+  handleImageFileUpload,
+  clearUploadedImageFile,
+  newSupplierData,
+  setNewSupplierData,
+  activeTab,
+  setActiveTab,
+  handleLineChange,
+  getAvailableBrands,
+  addImage,
+  removeImage,
+  setPrimaryImage,
+  moveImage,
+  addSupplier,
+  removeSupplier,
+  getStatusBadge,
+  formatCurrency,
+  setIsCreateModalOpen,
+  setEditingProduct,
+  resetForm,
+}) => (
+  <form onSubmit={onSubmit} className="space-y-6">
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full"
+    >
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="basic">Básico</TabsTrigger>
+        <TabsTrigger value="images">Imágenes</TabsTrigger>
+        <TabsTrigger value="suppliers">
+          Proveedores
+        </TabsTrigger>
+        <TabsTrigger value="review">Revisar</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="basic" className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">
+              Nombre del Producto *
+            </Label>
+            <Input
+              id="name"
+              value={newProduct.name}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNewProduct((prev) => ({
+                  ...prev,
+                  name: value,
+                }));
+              }}
+              placeholder="Nombre del producto"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="line">Línea *</Label>
+            <Select
+              value={newProduct.lineId}
+              onValueChange={handleLineChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar línea" />
+              </SelectTrigger>
+              <SelectContent>
+                {mockBrandLines.map((line) => (
+                  <SelectItem key={line.id} value={line.id}>
+                    {line.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="brand">Marca *</Label>
+            <Select
+              value={newProduct.brandId}
+              onValueChange={(value: string) =>
+                setNewProduct((prev) => ({
+                  ...prev,
+                  brandId: value,
+                }))
+              }
+              disabled={!newProduct.lineId}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    newProduct.lineId
+                      ? "Seleccionar marca"
+                      : "Primero seleccione una línea"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableBrands(newProduct.lineId).map(
+                  (brand) => (
+                    <SelectItem key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </SelectItem>
+                  ),
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="price">Precio *</Label>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              min="0"
+              value={newProduct.price}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNewProduct((prev) => ({
+                  ...prev,
+                  price: value,
+                }));
+              }}
+              placeholder="0"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stock">Stock</Label>
+            <Input
+              id="stock"
+              type="number"
+              min="0"
+              value={newProduct.stock}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNewProduct((prev) => ({
+                  ...prev,
+                  stock: value,
+                }));
+              }}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Descripción</Label>
+          <Textarea
+            id="description"
+            value={newProduct.description}
+            onChange={(e) => {
+              const value = e.target.value;
+              setNewProduct((prev) => ({
+                ...prev,
+                description: value,
+              }));
+            }}
+            placeholder="Descripción detallada del producto"
+            rows={3}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="status">Estado</Label>
+          <Select
+            value={newProduct.status}
+            onValueChange={(
+              value: "active" | "inactive" | "draft",
+            ) =>
+              setNewProduct((prev) => ({
+                ...prev,
+                status: value,
+              }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Borrador</SelectItem>
+              <SelectItem value="active">Activo</SelectItem>
+              <SelectItem value="inactive">
+                Inactivo
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="images" className="space-y-4">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <ImageIcon className="w-5 h-5" />
+            <h3 className="text-lg font-semibold">
+              Gestión de Imágenes
+            </h3>
+          </div>
+
+          {imageValidationError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative text-sm" role="alert">
+              <div className="flex items-center space-x-2">
+                <X className="w-4 h-4" />
+                <span>{imageValidationError}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Label>Agregar nueva imagen</Label>
+            
+            {/* Opción 1: Subir archivo local */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  ref={imageFileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  onChange={handleImageFileUpload}
+                  className="hidden"
+                  id="product-image-upload"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => imageFileInputRef.current?.click()}
+                  className="flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadedImageFile ? 'Cambiar Archivo' : 'Subir Imagen Local'}
+                </Button>
+                {uploadedImageFile && (
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={clearUploadedImageFile}
+                    title="Eliminar archivo"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              {uploadedImageFile && (
+                <p className="text-sm text-green-600 flex items-center space-x-1">
+                  <span>✓</span>
+                  <span>{uploadedImageFile.name}</span>
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Formatos aceptados: JPG, JPEG, PNG (máx. 5MB)
+              </p>
+            </div>
+
+            {/* Opción 2: URL desde internet */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">O ingresa una URL</span>
+              </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <Input
+                value={uploadedImageFile ? '' : newImageUrl}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setNewImageUrl(value);
+                  setUploadedImageFile(null);
+                  setImageValidationError('');
+                }}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                className="flex-1"
+                disabled={!!uploadedImageFile}
+              />
+              <Button type="button" onClick={addImage} disabled={!newImageUrl.trim()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar
+              </Button>
+            </div>
+
+            {/* Vista previa de la imagen */}
+            {newImageUrl && (
+              <div className="mt-2 p-4 border rounded-lg bg-muted/50">
+                <p className="text-sm font-medium mb-2">Vista previa:</p>
+                <ImageWithFallback
+                  src={newImageUrl}
+                  alt="Vista previa"
+                  className="w-32 h-32 object-cover rounded border bg-white"
+                />
+              </div>
+            )}
+          </div>
+
+          {productImages.length > 0 && (
+            <div className="space-y-2">
+              <Label>Imágenes del producto ({productImages.length})</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {productImages.map((image, index) => (
+                  <div
+                    key={image.id}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
+                    <div className="relative">
+                      <ImageWithFallback
+                        src={image.url}
+                        alt={image.alt}
+                        className="w-full h-32 object-cover rounded"
+                      />
+                      {image.isPrimary && (
+                        <Badge
+                          className="absolute top-2 left-2"
+                          variant="default"
+                        >
+                          <Star className="w-3 h-3 mr-1" />
+                          Principal
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex space-x-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            moveImage(image.id, "up")
+                          }
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            moveImage(image.id, "down")
+                          }
+                          disabled={
+                            index === productImages.length - 1
+                          }
+                        >
+                          <ArrowDown className="w-3 h-3" />
+                        </Button>
+                        {!image.isPrimary && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setPrimaryImage(image.id)
+                            }
+                          >
+                            <Star className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeImage(image.id)}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="suppliers" className="space-y-4">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Building2 className="w-5 h-5" />
+            <h3 className="text-lg font-semibold">
+              Proveedores
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Proveedor</Label>
+              <Select
+                value={newSupplierData.supplierId}
+                onValueChange={(value: string) =>
+                  setNewSupplierData((prev) => ({
+                    ...prev,
+                    supplierId: value,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar proveedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockSuppliers.map((supplier) => (
+                    <SelectItem
+                      key={supplier.id}
+                      value={supplier.id}
+                    >
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Código del Proveedor</Label>
+              <div className="flex space-x-2">
+                <Input
+                  value={newSupplierData.supplierCode}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewSupplierData((prev) => ({
+                      ...prev,
+                      supplierCode: value,
+                    }));
+                  }}
+                  placeholder="Código único del proveedor"
+                  className="flex-1"
+                />
+                <Button type="button" onClick={addSupplier}>
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {productSuppliers.length > 0 && (
+            <div className="space-y-2">
+              <Label>Proveedores asociados</Label>
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Proveedor</TableHead>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productSuppliers.map((supplier) => (
+                      <TableRow key={supplier.id}>
+                        <TableCell>
+                          {supplier.supplierName}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {supplier.supplierCode}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              removeSupplier(supplier.id)
+                            }
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="review" className="space-y-4">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">
+            Revisar información del producto
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <strong>Nombre:</strong>{" "}
+              {newProduct.name || "No especificado"}
+            </div>
+            <div>
+              <strong>Línea:</strong>{" "}
+              {mockBrandLines.find(
+                (l) => l.id === newProduct.lineId,
+              )?.name || "No especificada"}
+            </div>
+            <div>
+              <strong>Marca:</strong>{" "}
+              {mockBrands.find(
+                (b) => b.id === newProduct.brandId,
+              )?.name || "No especificada"}
+            </div>
+            <div>
+              <strong>Precio:</strong>{" "}
+              {newProduct.price
+                ? formatCurrency(parseFloat(newProduct.price))
+                : "No especificado"}
+            </div>
+            <div>
+              <strong>Stock:</strong>{" "}
+              {newProduct.stock || "0"} unidades
+            </div>
+            <div>
+              <strong>Estado:</strong>{" "}
+              {getStatusBadge(newProduct.status)}
+            </div>
+            <div>
+              <strong>Imágenes:</strong>{" "}
+              {productImages.length} imagen(es)
+            </div>
+            <div>
+              <strong>Proveedores:</strong>{" "}
+              {productSuppliers.length} proveedor(es)
+            </div>
+          </div>
+
+          {newProduct.description && (
+            <div>
+              <strong>Descripción:</strong>
+              <br />
+              <p className="text-sm text-muted-foreground mt-1">
+                {newProduct.description}
+              </p>
+            </div>
+          )}
+        </div>
+      </TabsContent>
+    </Tabs>
+
+    <div className="flex justify-end space-x-2 pt-4 border-t">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          setIsCreateModalOpen(false);
+          setEditingProduct(null);
+          resetForm();
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button type="submit">
+        {isEdit ? "Actualizar Producto" : "Crear Producto"}
+      </Button>
+    </div>
+  </form>
+));
+
+ProductFormComponent.displayName = "ProductForm";
+
 export function EnhancedProductManagement() {
   const [products, setProducts] =
     useState<Product[]>(mockProducts);
@@ -320,15 +949,27 @@ export function EnhancedProductManagement() {
     ProductSupplier[]
   >([]);
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
+  const [imageValidationError, setImageValidationError] = useState<string>('');
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
   const [newSupplierData, setNewSupplierData] = useState({
     supplierId: "",
     supplierCode: "",
   });
 
-  const getAvailableLines = (brandId: string) => {
-    return mockBrandLines.filter(
-      (line) => line.brandId === brandId,
-    );
+  const getAvailableBrands = (lineId: string) => {
+    const line = mockBrandLines.find((l) => l.id === lineId);
+    if (!line) return [];
+    return mockBrands.filter((brand) => brand.id === line.brandId);
+  };
+
+  const handleLineChange = (lineId: string) => {
+    const line = mockBrandLines.find((l) => l.id === lineId);
+    setNewProduct((prev) => ({
+      ...prev,
+      lineId,
+      brandId: line ? line.brandId : "",
+    }));
   };
 
   const handleSearch = (term: string) => {
@@ -348,8 +989,42 @@ export function EnhancedProductManagement() {
     setFilteredProducts(filtered);
   };
 
-  const handleBrandChange = (brandId: string) => {
-    setNewProduct((prev) => ({ ...prev, brandId, lineId: "" }));
+  const handleImageFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      setImageValidationError('Solo se permiten archivos .jpg, .jpeg o .png');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setImageValidationError('El archivo no debe superar los 5MB');
+      return;
+    }
+
+    setImageValidationError('');
+    setUploadedImageFile(file);
+
+    // Convertir a base64 para preview y almacenamiento
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewImageUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearUploadedImageFile = () => {
+    setUploadedImageFile(null);
+    setNewImageUrl('');
+    setImageValidationError('');
+    if (imageFileInputRef.current) {
+      imageFileInputRef.current.value = '';
+    }
   };
 
   const addImage = () => {
@@ -365,6 +1040,7 @@ export function EnhancedProductManagement() {
 
     setProductImages([...productImages, newImage]);
     setNewImageUrl("");
+    clearUploadedImageFile();
   };
 
   const removeImage = (imageId: string) => {
@@ -630,470 +1306,6 @@ export function EnhancedProductManagement() {
     }).format(amount);
   };
 
-  const ProductForm = ({
-    onSubmit,
-    isEdit = false,
-  }: {
-    onSubmit: (e: React.FormEvent) => void;
-    isEdit?: boolean;
-  }) => (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="basic">Básico</TabsTrigger>
-          <TabsTrigger value="images">Imágenes</TabsTrigger>
-          <TabsTrigger value="suppliers">
-            Proveedores
-          </TabsTrigger>
-          <TabsTrigger value="review">Revisar</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="basic" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Nombre del Producto *
-              </Label>
-              <Input
-                id="name"
-                value={newProduct.name}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
-                placeholder="Nombre del producto"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="brand">Marca *</Label>
-              <Select
-                value={newProduct.brandId}
-                onValueChange={handleBrandChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar marca" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockBrands.map((brand) => (
-                    <SelectItem key={brand.id} value={brand.id}>
-                      {brand.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="line">Línea *</Label>
-              <Select
-                value={newProduct.lineId}
-                onValueChange={(value: string) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    lineId: value,
-                  }))
-                }
-                disabled={!newProduct.brandId}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      newProduct.brandId
-                        ? "Seleccionar línea"
-                        : "Primero seleccione una marca"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableLines(newProduct.brandId).map(
-                    (line) => (
-                      <SelectItem key={line.id} value={line.id}>
-                        {line.name}
-                      </SelectItem>
-                    ),
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Precio *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="1"
-                min="0"
-                value={newProduct.price}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    price: e.target.value,
-                  }))
-                }
-                placeholder="0"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
-              <Input
-                id="stock"
-                type="number"
-                min="0"
-                value={newProduct.stock}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    stock: e.target.value,
-                  }))
-                }
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              value={newProduct.description}
-              onChange={(e) =>
-                setNewProduct((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              placeholder="Descripción detallada del producto"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Estado</Label>
-            <Select
-              value={newProduct.status}
-              onValueChange={(
-                value: "active" | "inactive" | "draft",
-              ) =>
-                setNewProduct((prev) => ({
-                  ...prev,
-                  status: value,
-                }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Borrador</SelectItem>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="inactive">
-                  Inactivo
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="images" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <ImageIcon className="w-5 h-5" />
-              <h3 className="text-lg font-semibold">
-                Gestión de Imágenes
-              </h3>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Agregar nueva imagen</Label>
-              <div className="flex space-x-2">
-                <Input
-                  value={newImageUrl}
-                  onChange={(e) =>
-                    setNewImageUrl(e.target.value)
-                  }
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="flex-1"
-                />
-                <Button type="button" onClick={addImage}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar
-                </Button>
-              </div>
-            </div>
-
-            {productImages.length > 0 && (
-              <div className="space-y-2">
-                <Label>Imágenes del producto</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {productImages.map((image, index) => (
-                    <div
-                      key={image.id}
-                      className="border rounded-lg p-4 space-y-2"
-                    >
-                      <div className="relative">
-                        <ImageWithFallback
-                          src={image.url}
-                          alt={image.alt}
-                          className="w-full h-32 object-cover rounded"
-                        />
-                        {image.isPrimary && (
-                          <Badge
-                            className="absolute top-2 left-2"
-                            variant="default"
-                          >
-                            <Star className="w-3 h-3 mr-1" />
-                            Principal
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex space-x-1">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              moveImage(image.id, "up")
-                            }
-                            disabled={index === 0}
-                          >
-                            <ArrowUp className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              moveImage(image.id, "down")
-                            }
-                            disabled={
-                              index === productImages.length - 1
-                            }
-                          >
-                            <ArrowDown className="w-3 h-3" />
-                          </Button>
-                          {!image.isPrimary && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setPrimaryImage(image.id)
-                              }
-                            >
-                              <Star className="w-3 h-3" />
-                            </Button>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeImage(image.id)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="suppliers" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Building2 className="w-5 h-5" />
-              <h3 className="text-lg font-semibold">
-                Proveedores
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Proveedor</Label>
-                <Select
-                  value={newSupplierData.supplierId}
-                  onValueChange={(value: string) =>
-                    setNewSupplierData((prev) => ({
-                      ...prev,
-                      supplierId: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar proveedor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockSuppliers.map((supplier) => (
-                      <SelectItem
-                        key={supplier.id}
-                        value={supplier.id}
-                      >
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Código del Proveedor</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    value={newSupplierData.supplierCode}
-                    onChange={(e) =>
-                      setNewSupplierData((prev) => ({
-                        ...prev,
-                        supplierCode: e.target.value,
-                      }))
-                    }
-                    placeholder="Código único del proveedor"
-                    className="flex-1"
-                  />
-                  <Button type="button" onClick={addSupplier}>
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {productSuppliers.length > 0 && (
-              <div className="space-y-2">
-                <Label>Proveedores asociados</Label>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Proveedor</TableHead>
-                        <TableHead>Código</TableHead>
-                        <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {productSuppliers.map((supplier) => (
-                        <TableRow key={supplier.id}>
-                          <TableCell>
-                            {supplier.supplierName}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {supplier.supplierCode}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                removeSupplier(supplier.id)
-                              }
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="review" className="space-y-4">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">
-              Revisar información del producto
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <strong>Nombre:</strong>{" "}
-                {newProduct.name || "No especificado"}
-              </div>
-              <div>
-                <strong>Marca:</strong>{" "}
-                {mockBrands.find(
-                  (b) => b.id === newProduct.brandId,
-                )?.name || "No especificada"}
-              </div>
-              <div>
-                <strong>Línea:</strong>{" "}
-                {mockBrandLines.find(
-                  (l) => l.id === newProduct.lineId,
-                )?.name || "No especificada"}
-              </div>
-              <div>
-                <strong>Precio:</strong>{" "}
-                {newProduct.price
-                  ? formatCurrency(parseFloat(newProduct.price))
-                  : "No especificado"}
-              </div>
-              <div>
-                <strong>Stock:</strong>{" "}
-                {newProduct.stock || "0"} unidades
-              </div>
-              <div>
-                <strong>Estado:</strong>{" "}
-                {getStatusBadge(newProduct.status)}
-              </div>
-              <div>
-                <strong>Imágenes:</strong>{" "}
-                {productImages.length} imagen(es)
-              </div>
-              <div>
-                <strong>Proveedores:</strong>{" "}
-                {productSuppliers.length} proveedor(es)
-              </div>
-            </div>
-
-            {newProduct.description && (
-              <div>
-                <strong>Descripción:</strong>
-                <br />
-                <p className="text-sm text-muted-foreground mt-1">
-                  {newProduct.description}
-                </p>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <div className="flex justify-end space-x-2 pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            setIsCreateModalOpen(false);
-            setEditingProduct(null);
-            resetForm();
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit">
-          {isEdit ? "Actualizar Producto" : "Crear Producto"}
-        </Button>
-      </div>
-    </form>
-  );
-
   return (
     <div className="space-y-6">
       <Card>
@@ -1120,7 +1332,7 @@ export function EnhancedProductManagement() {
                   <span>Nuevo Producto</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent key="create-product-dialog" className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     Crear Nuevo Producto
@@ -1129,7 +1341,39 @@ export function EnhancedProductManagement() {
                     Completa toda la información del producto
                   </DialogDescription>
                 </DialogHeader>
-                <ProductForm onSubmit={handleCreateProduct} />
+                <ProductFormComponent
+                  onSubmit={handleCreateProduct}
+                  newProduct={newProduct}
+                  setNewProduct={setNewProduct}
+                  productImages={productImages}
+                  productSuppliers={productSuppliers}
+                  newImageUrl={newImageUrl}
+                  setNewImageUrl={setNewImageUrl}
+                  uploadedImageFile={uploadedImageFile}
+                  setUploadedImageFile={setUploadedImageFile}
+                  imageValidationError={imageValidationError}
+                  setImageValidationError={setImageValidationError}
+                  imageFileInputRef={imageFileInputRef}
+                  handleImageFileUpload={handleImageFileUpload}
+                  clearUploadedImageFile={clearUploadedImageFile}
+                  newSupplierData={newSupplierData}
+                  setNewSupplierData={setNewSupplierData}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  handleLineChange={handleLineChange}
+                  getAvailableBrands={getAvailableBrands}
+                  addImage={addImage}
+                  removeImage={removeImage}
+                  setPrimaryImage={setPrimaryImage}
+                  moveImage={moveImage}
+                  addSupplier={addSupplier}
+                  removeSupplier={removeSupplier}
+                  getStatusBadge={getStatusBadge}
+                  formatCurrency={formatCurrency}
+                  setIsCreateModalOpen={setIsCreateModalOpen}
+                  setEditingProduct={setEditingProduct}
+                  resetForm={resetForm}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -1371,7 +1615,7 @@ export function EnhancedProductManagement() {
                                 <Edit className="w-4 h-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogContent key={`edit-product-${product.id}`} className="max-w-4xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle>
                                   Editar Producto
@@ -1381,9 +1625,39 @@ export function EnhancedProductManagement() {
                                   producto
                                 </DialogDescription>
                               </DialogHeader>
-                              <ProductForm
+                              <ProductFormComponent
                                 onSubmit={handleUpdateProduct}
                                 isEdit
+                                newProduct={newProduct}
+                                setNewProduct={setNewProduct}
+                                productImages={productImages}
+                                productSuppliers={productSuppliers}
+                                newImageUrl={newImageUrl}
+                                setNewImageUrl={setNewImageUrl}
+                                uploadedImageFile={uploadedImageFile}
+                                setUploadedImageFile={setUploadedImageFile}
+                                imageValidationError={imageValidationError}
+                                setImageValidationError={setImageValidationError}
+                                imageFileInputRef={imageFileInputRef}
+                                handleImageFileUpload={handleImageFileUpload}
+                                clearUploadedImageFile={clearUploadedImageFile}
+                                newSupplierData={newSupplierData}
+                                setNewSupplierData={setNewSupplierData}
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                handleLineChange={handleLineChange}
+                                getAvailableBrands={getAvailableBrands}
+                                addImage={addImage}
+                                removeImage={removeImage}
+                                setPrimaryImage={setPrimaryImage}
+                                moveImage={moveImage}
+                                addSupplier={addSupplier}
+                                removeSupplier={removeSupplier}
+                                getStatusBadge={getStatusBadge}
+                                formatCurrency={formatCurrency}
+                                setIsCreateModalOpen={setIsCreateModalOpen}
+                                setEditingProduct={setEditingProduct}
+                                resetForm={resetForm}
                               />
                             </DialogContent>
                           </Dialog>

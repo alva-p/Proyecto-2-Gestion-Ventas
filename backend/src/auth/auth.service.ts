@@ -42,4 +42,9 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
     return { access_token: token, user };
   }
+
+  // Método temporal de ayuda para hashear contraseñas
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
 }

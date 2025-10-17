@@ -58,6 +58,151 @@ const mockSuppliers: Supplier[] = [
   }
 ];
 
+// Componente SupplierForm separado para evitar re-renders
+type SupplierFormProps = {
+  onSubmit: (e: React.FormEvent) => void;
+  isEdit?: boolean;
+  newSupplier: {
+    name: string;
+    contact: string;
+    email: string;
+    phone: string;
+    address: string;
+    status: 'active' | 'inactive';
+  };
+  setNewSupplier: React.Dispatch<React.SetStateAction<{
+    name: string;
+    contact: string;
+    email: string;
+    phone: string;
+    address: string;
+    status: 'active' | 'inactive';
+  }>>;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingSupplier: React.Dispatch<React.SetStateAction<Supplier | null>>;
+  resetForm: () => void;
+};
+
+const SupplierFormComponent = React.memo<SupplierFormProps>(({
+  onSubmit,
+  isEdit = false,
+  newSupplier,
+  setNewSupplier,
+  setIsCreateModalOpen,
+  setEditingSupplier,
+  resetForm
+}) => (
+  <form onSubmit={onSubmit} className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Nombre del Proveedor *</Label>
+        <Input
+          id="name"
+          value={newSupplier.name}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNewSupplier(prev => ({ ...prev, name: value }));
+          }}
+          placeholder="Nombre de la empresa"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="contact">Persona de Contacto *</Label>
+        <Input
+          id="contact"
+          value={newSupplier.contact}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNewSupplier(prev => ({ ...prev, contact: value }));
+          }}
+          placeholder="Nombre del contacto"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email *</Label>
+        <Input
+          id="email"
+          type="email"
+          value={newSupplier.email}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNewSupplier(prev => ({ ...prev, email: value }));
+          }}
+          placeholder="email@empresa.com"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="phone">Teléfono *</Label>
+        <Input
+          id="phone"
+          value={newSupplier.phone}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNewSupplier(prev => ({ ...prev, phone: value }));
+          }}
+          placeholder="+54 11 1234-5678"
+          required
+        />
+      </div>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="address">Dirección</Label>
+      <Textarea
+        id="address"
+        value={newSupplier.address}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewSupplier(prev => ({ ...prev, address: value }));
+        }}
+        placeholder="Dirección completa"
+        rows={2}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="status">Estado</Label>
+      <select
+        id="status"
+        value={newSupplier.status}
+        onChange={(e) => {
+          const value = e.target.value as 'active' | 'inactive';
+          setNewSupplier(prev => ({ ...prev, status: value }));
+        }}
+        className="w-full px-3 py-2 border border-input bg-background rounded-md"
+      >
+        <option value="active">Activo</option>
+        <option value="inactive">Inactivo</option>
+      </select>
+    </div>
+
+    <div className="flex justify-end space-x-2 pt-4">
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={() => {
+          setIsCreateModalOpen(false);
+          setEditingSupplier(null);
+          resetForm();
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button type="submit">
+        {isEdit ? 'Actualizar Proveedor' : 'Crear Proveedor'}
+      </Button>
+    </div>
+  </form>
+));
+
+SupplierFormComponent.displayName = 'SupplierForm';
+
 export function SuppliersManagement() {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>(mockSuppliers);
@@ -220,98 +365,6 @@ export function SuppliersManagement() {
     return new Date(dateString).toLocaleDateString('es-ES');
   };
 
-  const SupplierForm = ({ onSubmit, isEdit = false }: { onSubmit: (e: React.FormEvent) => void; isEdit?: boolean }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nombre del Proveedor *</Label>
-          <Input
-            id="name"
-            value={newSupplier.name}
-            onChange={(e) => setNewSupplier(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="Nombre de la empresa"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="contact">Persona de Contacto *</Label>
-          <Input
-            id="contact"
-            value={newSupplier.contact}
-            onChange={(e) => setNewSupplier(prev => ({ ...prev, contact: e.target.value }))}
-            placeholder="Nombre del contacto"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
-          <Input
-            id="email"
-            type="email"
-            value={newSupplier.email}
-            onChange={(e) => setNewSupplier(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="email@empresa.com"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone">Teléfono *</Label>
-          <Input
-            id="phone"
-            value={newSupplier.phone}
-            onChange={(e) => setNewSupplier(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="+54 11 1234-5678"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Dirección</Label>
-        <Textarea
-          id="address"
-          value={newSupplier.address}
-          onChange={(e) => setNewSupplier(prev => ({ ...prev, address: e.target.value }))}
-          placeholder="Dirección completa"
-          rows={2}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="status">Estado</Label>
-        <select
-          id="status"
-          value={newSupplier.status}
-          onChange={(e) => setNewSupplier(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
-          className="w-full px-3 py-2 border border-input bg-background rounded-md"
-        >
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-        </select>
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            setIsCreateModalOpen(false);
-            setEditingSupplier(null);
-            resetForm();
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit">
-          {isEdit ? 'Actualizar Proveedor' : 'Crear Proveedor'}
-        </Button>
-      </div>
-    </form>
-  );
-
   return (
     <div className="space-y-6">
       <Card>
@@ -341,7 +394,14 @@ export function SuppliersManagement() {
                     Completa la información del proveedor
                   </DialogDescription>
                 </DialogHeader>
-                <SupplierForm onSubmit={handleCreateSupplier} />
+                <SupplierFormComponent 
+                  onSubmit={handleCreateSupplier}
+                  newSupplier={newSupplier}
+                  setNewSupplier={setNewSupplier}
+                  setIsCreateModalOpen={setIsCreateModalOpen}
+                  setEditingSupplier={setEditingSupplier}
+                  resetForm={resetForm}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -461,7 +521,15 @@ export function SuppliersManagement() {
                                 Modifica la información del proveedor
                               </DialogDescription>
                             </DialogHeader>
-                            <SupplierForm onSubmit={handleUpdateSupplier} isEdit />
+                            <SupplierFormComponent 
+                              onSubmit={handleUpdateSupplier}
+                              isEdit
+                              newSupplier={newSupplier}
+                              setNewSupplier={setNewSupplier}
+                              setIsCreateModalOpen={setIsCreateModalOpen}
+                              setEditingSupplier={setEditingSupplier}
+                              resetForm={resetForm}
+                            />
                           </DialogContent>
                         </Dialog>
 

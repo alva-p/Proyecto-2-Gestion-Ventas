@@ -96,6 +96,117 @@ const mockBrandLines: BrandLine[] = [
   }
 ];
 
+// Componente LineForm separado para evitar re-renders
+type LineFormProps = {
+  onSubmit: (e: React.FormEvent) => void;
+  isEdit?: boolean;
+  newLine: {
+    name: string;
+    description: string;
+    brandId: string;
+    status: 'active' | 'inactive';
+  };
+  setNewLine: React.Dispatch<React.SetStateAction<{
+    name: string;
+    description: string;
+    brandId: string;
+    status: 'active' | 'inactive';
+  }>>;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingLine: React.Dispatch<React.SetStateAction<BrandLine | null>>;
+  resetForm: () => void;
+};
+
+const LineFormComponent = React.memo<LineFormProps>(({
+  onSubmit,
+  isEdit = false,
+  newLine,
+  setNewLine,
+  setIsCreateModalOpen,
+  setEditingLine,
+  resetForm
+}) => (
+  <form onSubmit={onSubmit} className="space-y-4">
+    <div className="space-y-2">
+      <Label htmlFor="brandId">Marca *</Label>
+      <Select value={newLine.brandId} onValueChange={(value: string) => {
+        setNewLine(prev => ({ ...prev, brandId: value }));
+      }}>
+        <SelectTrigger>
+          <SelectValue placeholder="Seleccionar marca" />
+        </SelectTrigger>
+        <SelectContent>
+          {mockBrands.map(brand => (
+            <SelectItem key={brand.id} value={brand.id}>{brand.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="name">Nombre de la Línea *</Label>
+      <Input
+        id="name"
+        value={newLine.name}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewLine(prev => ({ ...prev, name: value }));
+        }}
+        placeholder="Nombre de la línea"
+        required
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="description">Descripción</Label>
+      <Textarea
+        id="description"
+        value={newLine.description}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewLine(prev => ({ ...prev, description: value }));
+        }}
+        placeholder="Descripción de la línea"
+        rows={3}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="status">Estado</Label>
+      <Select value={newLine.status} onValueChange={(value: 'active' | 'inactive') => {
+        setNewLine(prev => ({ ...prev, status: value }));
+      }}>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="active">Activa</SelectItem>
+          <SelectItem value="inactive">Inactiva</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="flex justify-end space-x-2 pt-4">
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={() => {
+          setIsCreateModalOpen(false);
+          setEditingLine(null);
+          resetForm();
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button type="submit">
+        {isEdit ? 'Actualizar Línea' : 'Crear Línea'}
+      </Button>
+    </div>
+  </form>
+));
+
+LineFormComponent.displayName = 'LineForm';
+
 export function BrandLinesManagement() {
   const [brandLines, setBrandLines] = useState<BrandLine[]>(mockBrandLines);
   const [filteredLines, setFilteredLines] = useState<BrandLine[]>(mockBrandLines);
@@ -268,76 +379,6 @@ export function BrandLinesManagement() {
     return new Date(dateString).toLocaleDateString('es-ES');
   };
 
-  const LineForm = ({ onSubmit, isEdit = false }: { onSubmit: (e: React.FormEvent) => void; isEdit?: boolean }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="brandId">Marca *</Label>
-        <Select value={newLine.brandId} onValueChange={(value: string) => setNewLine(prev => ({ ...prev, brandId: value }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccionar marca" />
-          </SelectTrigger>
-          <SelectContent>
-            {mockBrands.map(brand => (
-              <SelectItem key={brand.id} value={brand.id}>{brand.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="name">Nombre de la Línea *</Label>
-        <Input
-          id="name"
-          value={newLine.name}
-          onChange={(e) => setNewLine(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="Nombre de la línea"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Descripción</Label>
-        <Textarea
-          id="description"
-          value={newLine.description}
-          onChange={(e) => setNewLine(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Descripción de la línea"
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="status">Estado</Label>
-        <Select value={newLine.status} onValueChange={(value: 'active' | 'inactive') => setNewLine(prev => ({ ...prev, status: value }))}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Activa</SelectItem>
-            <SelectItem value="inactive">Inactiva</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            setIsCreateModalOpen(false);
-            setEditingLine(null);
-            resetForm();
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit">
-          {isEdit ? 'Actualizar Línea' : 'Crear Línea'}
-        </Button>
-      </div>
-    </form>
-  );
-
   return (
     <div className="space-y-6">
       <Card>
@@ -367,7 +408,14 @@ export function BrandLinesManagement() {
                     Completa la información de la línea de productos
                   </DialogDescription>
                 </DialogHeader>
-                <LineForm onSubmit={handleCreateLine} />
+                <LineFormComponent 
+                  onSubmit={handleCreateLine}
+                  newLine={newLine}
+                  setNewLine={setNewLine}
+                  setIsCreateModalOpen={setIsCreateModalOpen}
+                  setEditingLine={setEditingLine}
+                  resetForm={resetForm}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -484,7 +532,15 @@ export function BrandLinesManagement() {
                                 Modifica la información de la línea
                               </DialogDescription>
                             </DialogHeader>
-                            <LineForm onSubmit={handleUpdateLine} isEdit />
+                            <LineFormComponent 
+                              onSubmit={handleUpdateLine}
+                              isEdit
+                              newLine={newLine}
+                              setNewLine={setNewLine}
+                              setIsCreateModalOpen={setIsCreateModalOpen}
+                              setEditingLine={setEditingLine}
+                              resetForm={resetForm}
+                            />
                           </DialogContent>
                         </Dialog>
 

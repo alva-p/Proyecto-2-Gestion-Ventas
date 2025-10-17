@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
-import { Plus, Edit, Trash2, Tag, Upload, Search, Eye, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Upload, Search, Eye, AlertTriangle, X } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
 type Brand = {
@@ -51,6 +51,212 @@ const mockBrands: Brand[] = [
   }
 ];
 
+// Componente BrandForm separado para evitar re-renders
+type BrandFormProps = {
+  onSubmit: (e: React.FormEvent) => void;
+  isEdit?: boolean;
+  newBrand: {
+    name: string;
+    description: string;
+    logo: string;
+    status: 'active' | 'inactive';
+  };
+  setNewBrand: React.Dispatch<React.SetStateAction<{
+    name: string;
+    description: string;
+    logo: string;
+    status: 'active' | 'inactive';
+  }>>;
+  validationError: string;
+  setValidationError: React.Dispatch<React.SetStateAction<string>>;
+  uploadedFile: File | null;
+  setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  clearUploadedFile: () => void;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingBrand: React.Dispatch<React.SetStateAction<Brand | null>>;
+  resetForm: () => void;
+};
+
+const BrandFormComponent = React.memo<BrandFormProps>(({
+  onSubmit,
+  isEdit = false,
+  newBrand,
+  setNewBrand,
+  validationError,
+  setValidationError,
+  uploadedFile,
+  setUploadedFile,
+  fileInputRef,
+  handleFileUpload,
+  clearUploadedFile,
+  setIsCreateModalOpen,
+  setEditingBrand,
+  resetForm,
+}) => (
+  <form onSubmit={onSubmit} className="space-y-4">
+    {validationError && (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div className="flex items-center space-x-2">
+          <AlertTriangle className="w-5 h-5" />
+          <span className="block sm:inline">{validationError}</span>
+        </div>
+      </div>
+    )}
+
+    <div className="space-y-2">
+      <Label htmlFor="name">Nombre de la Marca *</Label>
+      <Input
+        id="name"
+        value={newBrand.name}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewBrand(prev => ({ ...prev, name: value }));
+          setValidationError('');
+        }}
+        placeholder="Nombre de la marca"
+        required
+        className={validationError.includes('nombre') ? 'border-red-500' : ''}
+      />
+      <p className="text-sm text-muted-foreground">
+        El nombre debe ser único en el sistema
+      </p>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="description">Descripción</Label>
+      <Textarea
+        id="description"
+        value={newBrand.description}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewBrand(prev => ({ ...prev, description: value }));
+        }}
+        placeholder="Descripción de la marca"
+        rows={3}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="logo">Logo de la Marca</Label>
+      
+      {/* Opción 1: Subir archivo local */}
+      <div className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="file-upload"
+          />
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {uploadedFile ? 'Cambiar Archivo' : 'Subir Archivo Local'}
+          </Button>
+          {uploadedFile && (
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="icon"
+              onClick={clearUploadedFile}
+              title="Eliminar archivo"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+        {uploadedFile && (
+          <p className="text-sm text-green-600 flex items-center space-x-1">
+            <span>✓</span>
+            <span>{uploadedFile.name}</span>
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Formatos aceptados: JPG, JPEG, PNG (máx. 5MB)
+        </p>
+      </div>
+
+      {/* Opción 2: URL desde internet */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">O ingresa una URL</span>
+        </div>
+      </div>
+
+      <Input
+        id="logo"
+        value={uploadedFile ? '' : newBrand.logo}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNewBrand(prev => ({ ...prev, logo: value }));
+          setUploadedFile(null);
+        }}
+        placeholder="https://ejemplo.com/logo.png"
+        disabled={!!uploadedFile}
+        className={uploadedFile ? 'opacity-50' : ''}
+      />
+
+      {/* Vista previa del logo */}
+      {newBrand.logo && (
+        <div className="mt-2 p-4 border rounded-lg bg-muted/50">
+          <p className="text-sm font-medium mb-2">Vista previa:</p>
+          <ImageWithFallback
+            src={newBrand.logo}
+            alt="Vista previa del logo"
+            className="w-20 h-20 object-contain rounded border bg-white p-2"
+          />
+        </div>
+      )}
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="status">Estado</Label>
+      <select
+        id="status"
+        value={newBrand.status}
+        onChange={(e) => {
+          const value = e.target.value as 'active' | 'inactive';
+          setNewBrand(prev => ({ ...prev, status: value }));
+        }}
+        className="w-full px-3 py-2 border border-input bg-background rounded-md"
+      >
+        <option value="active">Activa</option>
+        <option value="inactive">Inactiva</option>
+      </select>
+    </div>
+
+    <div className="flex justify-end space-x-2 pt-4">
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={() => {
+          setIsCreateModalOpen(false);
+          setEditingBrand(null);
+          resetForm();
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button type="submit">
+        {isEdit ? 'Actualizar Marca' : 'Crear Marca'}
+      </Button>
+    </div>
+  </form>
+));
+
+BrandFormComponent.displayName = 'BrandForm';
+
 export function AdminBrandManagement() {
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
   const [filteredBrands, setFilteredBrands] = useState<Brand[]>(mockBrands);
@@ -64,6 +270,9 @@ export function AdminBrandManagement() {
     logo: '',
     status: 'active' as 'active' | 'inactive'
   });
+  const [validationError, setValidationError] = useState<string>('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -74,24 +283,75 @@ export function AdminBrandManagement() {
     setFilteredBrands(filtered);
   };
 
-  const validateBrandName = (name: string, excludeId?: string) => {
-    return !brands.some(brand => 
+  const validateBrandName = (name: string, excludeId?: string): { isValid: boolean; error?: string } => {
+    if (!name.trim()) {
+      return { isValid: false, error: 'El nombre de la marca es obligatorio' };
+    }
+
+    const existingBrand = brands.find(brand => 
       brand.name.toLowerCase() === name.toLowerCase() && brand.id !== excludeId
     );
+
+    if (existingBrand) {
+      return { 
+        isValid: false, 
+        error: `Ya existe una marca con el nombre "${name}". Por favor, elige un nombre diferente.` 
+      };
+    }
+
+    return { isValid: true };
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      setValidationError('Solo se permiten archivos .jpg, .jpeg o .png');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setValidationError('El archivo no debe superar los 5MB');
+      return;
+    }
+
+    setValidationError('');
+    setUploadedFile(file);
+
+    // Convertir a base64 para preview y almacenamiento
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewBrand(prev => ({ ...prev, logo: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearUploadedFile = () => {
+    setUploadedFile(null);
+    setNewBrand(prev => ({ ...prev, logo: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCreateBrand = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateBrandName(newBrand.name)) {
-      alert('Ya existe una marca con ese nombre');
+    const validation = validateBrandName(newBrand.name);
+    if (!validation.isValid) {
+      setValidationError(validation.error || '');
       return;
     }
 
     const brand: Brand = {
       id: Date.now().toString(),
-      name: newBrand.name,
-      description: newBrand.description,
+      name: newBrand.name.trim(),
+      description: newBrand.description.trim(),
       logo: newBrand.logo || 'https://images.unsplash.com/photo-1622465911368-72162f8da3e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxicmFuZCUyMGxvZ28lMjBjb21wYW55fGVufDF8fHx8MTc1OTM0ODIwOXww&ixlib=rb-4.1.0&q=80&w=1080',
       status: newBrand.status,
       productsCount: 0,
@@ -119,8 +379,9 @@ export function AdminBrandManagement() {
     e.preventDefault();
     if (!editingBrand) return;
 
-    if (!validateBrandName(newBrand.name, editingBrand.id)) {
-      alert('Ya existe una marca con ese nombre');
+    const validation = validateBrandName(newBrand.name, editingBrand.id);
+    if (!validation.isValid) {
+      setValidationError(validation.error || '');
       return;
     }
 
@@ -128,8 +389,8 @@ export function AdminBrandManagement() {
       b.id === editingBrand.id
         ? {
             ...b,
-            name: newBrand.name,
-            description: newBrand.description,
+            name: newBrand.name.trim(),
+            description: newBrand.description.trim(),
             logo: newBrand.logo,
             status: newBrand.status
           }
@@ -163,6 +424,11 @@ export function AdminBrandManagement() {
       logo: '',
       status: 'active'
     });
+    setValidationError('');
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -186,88 +452,6 @@ export function AdminBrandManagement() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES');
   };
-
-  const BrandForm = ({ onSubmit, isEdit = false }: { onSubmit: (e: React.FormEvent) => void; isEdit?: boolean }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Nombre de la Marca *</Label>
-        <Input
-          id="name"
-          value={newBrand.name}
-          onChange={(e) => setNewBrand(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="Nombre de la marca"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Descripción</Label>
-        <Textarea
-          id="description"
-          value={newBrand.description}
-          onChange={(e) => setNewBrand(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Descripción de la marca"
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="logo">Logo de la Marca</Label>
-        <div className="flex space-x-2">
-          <Input
-            id="logo"
-            value={newBrand.logo}
-            onChange={(e) => setNewBrand(prev => ({ ...prev, logo: e.target.value }))}
-            placeholder="https://ejemplo.com/logo.png"
-            className="flex-1"
-          />
-          <Button type="button" variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            Subir
-          </Button>
-        </div>
-        {newBrand.logo && (
-          <div className="mt-2">
-            <ImageWithFallback
-              src={newBrand.logo}
-              alt="Vista previa del logo"
-              className="w-16 h-16 object-contain rounded border p-2"
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="status">Estado</Label>
-        <select
-          id="status"
-          value={newBrand.status}
-          onChange={(e) => setNewBrand(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
-          className="w-full px-3 py-2 border border-input bg-background rounded-md"
-        >
-          <option value="active">Activa</option>
-          <option value="inactive">Inactiva</option>
-        </select>
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            setIsCreateModalOpen(false);
-            setEditingBrand(null);
-            resetForm();
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit">
-          {isEdit ? 'Actualizar Marca' : 'Crear Marca'}
-        </Button>
-      </div>
-    </form>
-  );
 
   return (
     <div className="space-y-6">
@@ -298,7 +482,21 @@ export function AdminBrandManagement() {
                     Completa la información de la marca
                   </DialogDescription>
                 </DialogHeader>
-                <BrandForm onSubmit={handleCreateBrand} />
+                <BrandFormComponent
+                  onSubmit={handleCreateBrand}
+                  newBrand={newBrand}
+                  setNewBrand={setNewBrand}
+                  validationError={validationError}
+                  setValidationError={setValidationError}
+                  uploadedFile={uploadedFile}
+                  setUploadedFile={setUploadedFile}
+                  fileInputRef={fileInputRef}
+                  handleFileUpload={handleFileUpload}
+                  clearUploadedFile={clearUploadedFile}
+                  setIsCreateModalOpen={setIsCreateModalOpen}
+                  setEditingBrand={setEditingBrand}
+                  resetForm={resetForm}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -410,7 +608,22 @@ export function AdminBrandManagement() {
                                 Modifica la información de la marca
                               </DialogDescription>
                             </DialogHeader>
-                            <BrandForm onSubmit={handleUpdateBrand} isEdit />
+                            <BrandFormComponent
+                              onSubmit={handleUpdateBrand}
+                              isEdit
+                              newBrand={newBrand}
+                              setNewBrand={setNewBrand}
+                              validationError={validationError}
+                              setValidationError={setValidationError}
+                              uploadedFile={uploadedFile}
+                              setUploadedFile={setUploadedFile}
+                              fileInputRef={fileInputRef}
+                              handleFileUpload={handleFileUpload}
+                              clearUploadedFile={clearUploadedFile}
+                              setIsCreateModalOpen={setIsCreateModalOpen}
+                              setEditingBrand={setEditingBrand}
+                              resetForm={resetForm}
+                            />
                           </DialogContent>
                         </Dialog>
 

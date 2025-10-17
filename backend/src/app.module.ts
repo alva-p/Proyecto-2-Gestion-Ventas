@@ -53,7 +53,7 @@ import { Marca } from './marcas/entities/marca.entity';
       ],
       autoLoadEntities: true,
       migrations: ['dist/migrations/*.js'],
-      synchronize: true,
+      synchronize: false,
       ssl: { rejectUnauthorized: false },
       extra: { max: 5,
         connectionTimeoutMillis: 5000, // espera corta
