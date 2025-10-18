@@ -4,7 +4,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/users.entity';
-
+import { RoleName } from 'src/rol/entities/rol.enum';
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,7 +19,9 @@ export class AuthService {
     }
 
     // Busca el rol admin en la base de datos
-    const rolAdmin = await this.usersService['rolRepository'].findOne({ where: { nombre: 'admin' } });
+    const rolAdmin = await this.usersService['rolRepository'].findOne({
+      where: { nombre: RoleName.Admin },
+    });
     if (!rolAdmin) throw new BadRequestException('No existe el rol administrador');
 
     const user = await this.usersService.create({
