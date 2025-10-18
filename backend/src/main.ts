@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import 'reflect-metadata';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import { AppDataSource } from './data-source'; 
 import { ValidationPipe } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { ExistsPipe } from './pipes/exists.pipe';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,10 +29,10 @@ async function bootstrap() {
     }),
   );
 
-  // 🧱 Inicializar conexión TypeORM
-  await AppDataSource.initialize();
-  // 🚀 Correr migraciones automáticamente
-  await AppDataSource.runMigrations();
+  // Correr migraciones automáticamente
+  const dataSource = app.get(DataSource);
+  ExistsPipe.setDataSource(dataSource);
+  await dataSource.runMigrations();
   console.log('✅ Migraciones aplicadas automáticamente');
 
   await app.listen(port);

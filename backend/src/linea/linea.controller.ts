@@ -2,14 +2,19 @@ import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/commo
 import { LineaService } from './linea.service';
 import { CreateLineaDto } from './dto/create-linea.dto';
 import { UpdateLineaDto } from './dto/update-linea.dto';
+import { ExistsPipe } from '../pipes/exists.pipe';
 
 @Controller('lineas')
 export class LineaController {
   constructor(private readonly lineaService: LineaService) {}
 
   @Post()
-  create(@Body() createLineaDto: CreateLineaDto) {
-    return this.lineaService.create(createLineaDto);
+  create(
+    @Body('marcaId', ExistsPipe.for('Marca')) marcaId: number,
+    @Body() dto: CreateLineaDto,
+  ) {
+    // Marca validada automáticamente
+    return this.lineaService.create(dto);
   }
 
   @Get()
