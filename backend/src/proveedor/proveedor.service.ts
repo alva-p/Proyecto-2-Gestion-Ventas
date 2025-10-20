@@ -6,6 +6,7 @@ import { Proveedor } from './entities/proveedor.entity';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 
+
 @Injectable()
 export class ProveedorService {
   constructor(

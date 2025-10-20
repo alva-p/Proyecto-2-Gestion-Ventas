@@ -22,7 +22,7 @@ export class Proveedor {
   direccion: string;
 
   @Column({ type: 'varchar', length: 20 })
-  estado: string;
+  estado: boolean;
 
   @Column({ type: 'date', name: 'fecha_registro', default: () => 'CURRENT_DATE' })
   fechaRegistro: Date;

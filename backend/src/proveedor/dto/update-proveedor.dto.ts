@@ -26,5 +26,5 @@ export class UpdateProveedorDto extends PartialType(CreateProveedorDto) {
 
   @IsOptional()
   @IsString()
-  estado?: string;
+  estado?: boolean;
 }
