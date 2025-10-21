@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Marca } from 'src/marcas/entities/marca.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
+import { BlobOptions } from 'buffer';
 
 @Entity('linea')
 export class Linea {
@@ -14,8 +15,8 @@ export class Linea {
   @Column({ nullable: true })
   descripcion: string;
 
-  @Column({ default: 'activo' })
-  estado: string;
+  @Column({ default: true })
+  estado: Boolean;
 
   @Column({ name: 'cantidad_productos', default: 0 })
   cantidadProductos: number;

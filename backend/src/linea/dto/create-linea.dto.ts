@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateLineaDto {
   @IsString()
@@ -12,6 +12,6 @@ export class CreateLineaDto {
   marcaId: number;
 
   @IsOptional()
-  @IsString()
-  estado?: string;
+  @IsBoolean()
+  estado?: boolean;
 }
