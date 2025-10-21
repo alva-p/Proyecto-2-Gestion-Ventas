@@ -21,7 +21,7 @@ export class Proveedor {
   @Column({ type: 'varchar', length: 150 })
   direccion: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ default: true })
   estado: boolean;
 
   @Column({ type: 'date', name: 'fecha_registro', default: () => 'CURRENT_DATE' })
