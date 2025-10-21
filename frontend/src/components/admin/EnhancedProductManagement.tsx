@@ -1,8 +1,8 @@
 // frontend/src/components/admin/EnhancedProductManagement.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { getProductos, createProducto, updateProducto, deleteProducto } from "../../services/productService";
-import { getLineas } from "../../services/lineService";
-import { getMarcas } from "../../services/marcaService";
+import { getLineas, createLinea, type CreateLineaDTO } from "../../services/lineService";
+import { getMarcas, createMarca, type CreateMarcaDTO } from "../../services/marcaService";
 import { getProveedores } from "../../services/proveedorService";
 import type { Proveedor } from "../../types/Proveedor";
 import type { Producto } from "../../types/Producto";
@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Plus, Edit, Trash2, Package, Upload, Search, Eye, X, Building2, Star, ArrowUp, ArrowDown, Image as ImageIcon, Grid3X3 } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Upload, Search, Eye, X, Building2, Star, ArrowUp, ArrowDown, Image as ImageIcon, Grid3X3, AlertTriangle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 type ProductImage = {
@@ -85,6 +85,17 @@ type ProductFormProps = {
   lineas: Linea[];
   marcas: Marca[];
   proveedores: Proveedor[];
+  // Nuevas props para crear línea y marca
+  isCreateLineDialogOpen: boolean;
+  setIsCreateLineDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isCreateBrandDialogOpen: boolean;
+  setIsCreateBrandDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  newLineData: { nombre: string; descripcion: string; marcaId: string; estado: string };
+  setNewLineData: React.Dispatch<React.SetStateAction<{ nombre: string; descripcion: string; marcaId: string; estado: string }>>;
+  newBrandData: { nombre: string; descripcion: string };
+  setNewBrandData: React.Dispatch<React.SetStateAction<{ nombre: string; descripcion: string }>>;
+  handleCreateLine: () => Promise<void>;
+  handleCreateBrand: () => Promise<void>;
 };
 
 const ProductFormComponent = React.memo<ProductFormProps>(
@@ -124,6 +135,16 @@ const ProductFormComponent = React.memo<ProductFormProps>(
     lineas,
     marcas,
     proveedores,
+    isCreateLineDialogOpen,
+    setIsCreateLineDialogOpen,
+    isCreateBrandDialogOpen,
+    setIsCreateBrandDialogOpen,
+    newLineData,
+    setNewLineData,
+    newBrandData,
+    setNewBrandData,
+    handleCreateLine,
+    handleCreateBrand,
   }) => (
     <form onSubmit={onSubmit} className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -151,7 +172,93 @@ const ProductFormComponent = React.memo<ProductFormProps>(
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="line">Línea *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="line">Línea *</Label>
+                <Dialog open={isCreateLineDialogOpen} onOpenChange={setIsCreateLineDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
+                      Agregar nueva línea
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Crear Nueva Línea</DialogTitle>
+                      <DialogDescription>Complete los datos para crear una nueva línea de productos</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="newLineName">Nombre *</Label>
+                        <Input
+                          id="newLineName"
+                          value={newLineData.nombre}
+                          onChange={(e) => setNewLineData((d) => ({ ...d, nombre: e.target.value }))}
+                          placeholder="Ej: Electrónica"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newLineDescription">Descripción</Label>
+                        <Textarea
+                          id="newLineDescription"
+                          value={newLineData.descripcion}
+                          onChange={(e) => setNewLineData((d) => ({ ...d, descripcion: e.target.value }))}
+                          placeholder="Descripción de la línea (opcional)"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newLineMarca">Marca *</Label>
+                        <Select
+                          value={newLineData.marcaId}
+                          onValueChange={(v) => setNewLineData((d) => ({ ...d, marcaId: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar marca" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {marcas.map((marca) => (
+                              <SelectItem key={marca.id} value={marca.id.toString()}>
+                                {marca.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newLineEstado">Estado *</Label>
+                        <Select
+                          value={newLineData.estado}
+                          onValueChange={(v) => setNewLineData((d) => ({ ...d, estado: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar estado" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="activo">Activo</SelectItem>
+                            <SelectItem value="inactivo">Inactivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsCreateLineDialogOpen(false);
+                            setNewLineData({ nombre: "", descripcion: "", marcaId: "", estado: "activo" });
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button type="button" onClick={handleCreateLine}>
+                          Crear Línea
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Select value={newProduct.lineId} onValueChange={handleLineChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar línea" />
@@ -167,7 +274,60 @@ const ProductFormComponent = React.memo<ProductFormProps>(
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="brand">Marca *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="brand">Marca *</Label>
+                <Dialog open={isCreateBrandDialogOpen} onOpenChange={setIsCreateBrandDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
+                      Agregar nueva marca
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Crear Nueva Marca</DialogTitle>
+                      <DialogDescription>Complete los datos para crear una nueva marca</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="newBrandName">Nombre *</Label>
+                        <Input
+                          id="newBrandName"
+                          value={newBrandData.nombre}
+                          onChange={(e) => setNewBrandData((d) => ({ ...d, nombre: e.target.value }))}
+                          placeholder="Ej: Samsung"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newBrandDescription">Descripción</Label>
+                        <Textarea
+                          id="newBrandDescription"
+                          value={newBrandData.descripcion}
+                          onChange={(e) => setNewBrandData((d) => ({ ...d, descripcion: e.target.value }))}
+                          placeholder="Descripción de la marca (opcional)"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsCreateBrandDialogOpen(false);
+                            setNewBrandData({ nombre: "", descripcion: "" });
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button type="button" onClick={handleCreateBrand}>
+                          Crear Marca
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Select
                 value={newProduct.brandId}
                 onValueChange={(value: string) => setNewProduct((p) => ({ ...p, brandId: value }))}
@@ -236,6 +396,176 @@ const ProductFormComponent = React.memo<ProductFormProps>(
                 <SelectItem value="inactive">Inactivo</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </TabsContent>
+
+        {/* --------------------------------------------- */}
+        {/* TAB IMÁGENES */}
+        {/* --------------------------------------------- */}
+        <TabsContent value="images" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="image">Imagen del Producto</Label>
+            
+            {/* Opción 1: Subir archivo local */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  ref={imageFileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  onChange={handleImageFileUpload}
+                  className="hidden"
+                  id="product-file-upload"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => imageFileInputRef.current?.click()}
+                  className="flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadedImageFile ? 'Cambiar Archivo' : 'Subir Archivo Local'}
+                </Button>
+                {uploadedImageFile && (
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={clearUploadedImageFile}
+                    title="Eliminar archivo"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              {uploadedImageFile && (
+                <p className="text-sm text-green-600 flex items-center space-x-1">
+                  <span>✓</span>
+                  <span>{uploadedImageFile.name}</span>
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Formatos aceptados: JPG, JPEG, PNG (máx. 5MB)
+              </p>
+            </div>
+
+            {/* Opción 2: URL desde internet */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">O ingresa una URL</span>
+              </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <Input
+                id="image"
+                value={uploadedImageFile ? '' : newImageUrl}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setNewImageUrl(value);
+                  setUploadedImageFile(null);
+                  setImageValidationError('');
+                }}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                disabled={!!uploadedImageFile}
+                className={uploadedImageFile ? 'opacity-50 flex-1' : 'flex-1'}
+              />
+              <Button type="button" onClick={addImage} disabled={!newImageUrl.trim()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar
+              </Button>
+            </div>
+
+            {/* Mensaje de error de validación */}
+            {imageValidationError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative text-sm" role="alert">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span>{imageValidationError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Vista previa de la imagen */}
+            {newImageUrl && !uploadedImageFile && (
+              <div className="mt-2 p-4 border rounded-lg bg-muted/50">
+                <p className="text-sm font-medium mb-2">Vista previa:</p>
+                <ImageWithFallback
+                  src={newImageUrl}
+                  alt="Vista previa del producto"
+                  className="w-20 h-20 object-contain rounded border bg-white p-2"
+                />
+              </div>
+            )}
+
+            {/* Lista de imágenes agregadas */}
+            {productImages.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <Label>Imágenes del producto ({productImages.length})</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {productImages.map((image, index) => (
+                    <div key={image.id} className="border rounded-lg p-4 space-y-2">
+                      <div className="relative">
+                        <ImageWithFallback
+                          src={image.url}
+                          alt={image.alt}
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        {image.isPrimary && (
+                          <Badge className="absolute top-2 left-2" variant="default">
+                            <Star className="w-3 h-3 mr-1" />
+                            Principal
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex space-x-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => moveImage(image.id, "up")}
+                            disabled={index === 0}
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => moveImage(image.id, "down")}
+                            disabled={index === productImages.length - 1}
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </Button>
+                          {!image.isPrimary && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPrimaryImage(image.id)}
+                            >
+                              <Star className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeImage(image.id)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -366,6 +696,12 @@ export function EnhancedProductManagement() {
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const [newSupplierData, setNewSupplierData] = useState({ supplierId: "", supplierCode: "" });
 
+  // Estados para crear línea y marca
+  const [isCreateLineDialogOpen, setIsCreateLineDialogOpen] = useState(false);
+  const [isCreateBrandDialogOpen, setIsCreateBrandDialogOpen] = useState(false);
+  const [newLineData, setNewLineData] = useState({ nombre: "", descripcion: "", marcaId: "", estado: "activo" });
+  const [newBrandData, setNewBrandData] = useState({ nombre: "", descripcion: "" });
+
   // ------------------------------------------------------------
   // CARGA INICIAL
   // ------------------------------------------------------------
@@ -452,6 +788,174 @@ export function EnhancedProductManagement() {
     } catch (err) {
       console.error("Error eliminando producto:", err);
       alert("No se pudo eliminar el producto");
+    }
+  };
+
+  // ------------------------------------------------------------
+  // FUNCIONES DE MANEJO DE IMÁGENES
+  // ------------------------------------------------------------
+  const handleImageFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      setImageValidationError('Solo se permiten archivos .jpg, .jpeg o .png');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setImageValidationError('El archivo no debe superar los 5MB');
+      return;
+    }
+
+    setImageValidationError('');
+    setUploadedImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewImageUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearUploadedImageFile = () => {
+    setUploadedImageFile(null);
+    setNewImageUrl('');
+    setImageValidationError('');
+    if (imageFileInputRef.current) imageFileInputRef.current.value = '';
+  };
+
+  const addImage = () => {
+    if (!newImageUrl.trim()) return;
+    
+    const newImage: ProductImage = {
+      id: Date.now().toString(),
+      url: newImageUrl,
+      alt: `Imagen ${productImages.length + 1}`,
+      isPrimary: productImages.length === 0,
+      order: productImages.length + 1,
+    };
+    
+    setProductImages([...productImages, newImage]);
+    setNewImageUrl("");
+    clearUploadedImageFile();
+  };
+
+  const removeImage = (imageId: string) => {
+    const updatedImages = productImages.filter((img) => img.id !== imageId);
+    if (updatedImages.length > 0 && !updatedImages.some((img) => img.isPrimary)) {
+      updatedImages[0].isPrimary = true;
+    }
+    setProductImages(updatedImages);
+  };
+
+  const setPrimaryImage = (imageId: string) => {
+    const updatedImages = productImages.map((img) => ({
+      ...img,
+      isPrimary: img.id === imageId,
+    }));
+    setProductImages(updatedImages);
+  };
+
+  const moveImage = (imageId: string, direction: "up" | "down") => {
+    const currentIndex = productImages.findIndex((img) => img.id === imageId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= productImages.length) return;
+
+    const updatedImages = [...productImages];
+    [updatedImages[currentIndex], updatedImages[newIndex]] = [
+      updatedImages[newIndex],
+      updatedImages[currentIndex],
+    ];
+
+    updatedImages.forEach((img, index) => {
+      img.order = index + 1;
+    });
+
+    setProductImages(updatedImages);
+  };
+
+  // ------------------------------------------------------------
+  // FUNCIONES PARA CREAR LÍNEA Y MARCA
+  // ------------------------------------------------------------
+  const handleCreateLine = async () => {
+    if (!newLineData.nombre.trim()) {
+      alert("El nombre de la línea es obligatorio");
+      return;
+    }
+    if (!newLineData.marcaId) {
+      alert("Debe seleccionar una marca para la línea");
+      return;
+    }
+
+    // Validar que no exista una línea con el mismo nombre
+    const exists = lineas.some((l) => l.nombre.toLowerCase() === newLineData.nombre.trim().toLowerCase());
+    if (exists) {
+      alert("Ya existe una línea con ese nombre");
+      return;
+    }
+
+    const dto: CreateLineaDTO = {
+      nombre: newLineData.nombre.trim(),
+      descripcion: newLineData.descripcion.trim() || undefined,
+      estado: newLineData.estado,
+      marcaId: parseInt(newLineData.marcaId),
+    };
+
+    try {
+      const nuevaLinea = await createLinea(dto);
+      const updated = [...lineas, nuevaLinea];
+      setLineas(updated);
+      
+      // Seleccionar automáticamente la nueva línea en el formulario
+      setNewProduct((p) => ({ ...p, lineId: nuevaLinea.id.toString() }));
+      
+      // Resetear y cerrar diálogo
+      setNewLineData({ nombre: "", descripcion: "", marcaId: "", estado: "activo" });
+      setIsCreateLineDialogOpen(false);
+      
+      alert("Línea creada exitosamente");
+    } catch (err) {
+      console.error("Error creando línea:", err);
+      alert("Error al crear la línea");
+    }
+  };
+
+  const handleCreateBrand = async () => {
+    if (!newBrandData.nombre.trim()) {
+      alert("El nombre de la marca es obligatorio");
+      return;
+    }
+
+    // Validar que no exista una marca con el mismo nombre
+    const exists = marcas.some((m) => m.nombre.toLowerCase() === newBrandData.nombre.trim().toLowerCase());
+    if (exists) {
+      alert("Ya existe una marca con ese nombre");
+      return;
+    }
+
+    const dto: CreateMarcaDTO = {
+      nombre: newBrandData.nombre.trim(),
+      descripcion: newBrandData.descripcion.trim() || undefined,
+    };
+
+    try {
+      const nuevaMarca = await createMarca(dto);
+      const updated = [...marcas, nuevaMarca];
+      setMarcas(updated);
+      
+      // Resetear y cerrar diálogo
+      setNewBrandData({ nombre: "", descripcion: "" });
+      setIsCreateBrandDialogOpen(false);
+      
+      alert("Marca creada exitosamente. Ahora puede crear una línea asociada a esta marca.");
+    } catch (err) {
+      console.error("Error creando marca:", err);
+      alert("Error al crear la marca");
     }
   };
 
@@ -643,18 +1147,18 @@ export function EnhancedProductManagement() {
               imageValidationError={imageValidationError}
               setImageValidationError={setImageValidationError}
               imageFileInputRef={imageFileInputRef}
-              handleImageFileUpload={() => {}}
-              clearUploadedImageFile={() => {}}
+              handleImageFileUpload={handleImageFileUpload}
+              clearUploadedImageFile={clearUploadedImageFile}
               newSupplierData={newSupplierData}
               setNewSupplierData={setNewSupplierData}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               handleLineChange={handleLineChange}
               getAvailableBrands={getAvailableBrands}
-              addImage={() => {}}
-              removeImage={() => {}}
-              setPrimaryImage={() => {}}
-              moveImage={() => {}}
+              addImage={addImage}
+              removeImage={removeImage}
+              setPrimaryImage={setPrimaryImage}
+              moveImage={moveImage}
               addSupplier={() => {
                 if (!newSupplierData.supplierId) return;
                 const supplier = proveedores.find((p) => p.id.toString() === newSupplierData.supplierId);
@@ -681,6 +1185,16 @@ export function EnhancedProductManagement() {
               lineas={lineas}
               marcas={marcas}
               proveedores={proveedores}
+              isCreateLineDialogOpen={isCreateLineDialogOpen}
+              setIsCreateLineDialogOpen={setIsCreateLineDialogOpen}
+              isCreateBrandDialogOpen={isCreateBrandDialogOpen}
+              setIsCreateBrandDialogOpen={setIsCreateBrandDialogOpen}
+              newLineData={newLineData}
+              setNewLineData={setNewLineData}
+              newBrandData={newBrandData}
+              setNewBrandData={setNewBrandData}
+              handleCreateLine={handleCreateLine}
+              handleCreateBrand={handleCreateBrand}
             />
           </DialogContent>
         </Dialog>

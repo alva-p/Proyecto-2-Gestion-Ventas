@@ -10,7 +10,7 @@ export const getLineas = async (): Promise<Linea[]> => {
 export interface CreateLineaDTO {
   nombre: string;
   descripcion?: string;
-  estado: boolean;
+  estado?: string;
   marcaId: number;
 }
 
