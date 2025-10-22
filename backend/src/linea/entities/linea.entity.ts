@@ -16,7 +16,7 @@ export class Linea {
   descripcion: string;
 
   @Column({ default: true })
-  estado: Boolean;
+  estado: boolean;
 
   @Column({ name: 'cantidad_productos', default: 0 })
   cantidadProductos: number;
@@ -25,7 +25,7 @@ export class Linea {
   fechaCreacion: Date;
 
   @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
-  @JoinColumn({ name: 'marcaId' }) // 👈 agrega FK marcaId en la tabla línea
+  @JoinColumn({ name: 'marcaId' })
   marca: Marca;
 
   @OneToMany(() => Producto, (producto) => producto.linea)

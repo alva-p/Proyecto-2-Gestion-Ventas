@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Package, Upload, Search, Eye, X, AlertTriangle } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import API from '../../index';
-import { createLinea } from '../../services/lineService';
+import { createLinea } from '../../services/lineaService';
 import { createMarca } from '../../services/marcaService';
 import type { Marca } from "../../types/Marca";
 import type { Linea } from "../../types/Linea";

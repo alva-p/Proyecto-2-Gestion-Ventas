@@ -1,7 +1,7 @@
 // frontend/src/components/admin/EnhancedProductManagement.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { getProductos, createProducto, updateProducto, deleteProducto } from "../../services/productService";
-import { getLineas, createLinea, type CreateLineaDTO } from "../../services/lineService";
+import { getLineas, createLinea, type CreateLineaDTO } from "../../services/lineaService";
 import { getMarcas, createMarca, type CreateMarcaDTO } from "../../services/marcaService";
 import { getProveedores } from "../../services/proveedorService";
 import type { Proveedor } from "../../types/Proveedor";

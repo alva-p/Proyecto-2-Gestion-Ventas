@@ -16,11 +16,9 @@ export class CreateProveedorDto {
     @IsString()
     direccion: string;
 
-    @IsOptional()
     @IsBoolean()
     estado: boolean;
 
     @IsOptional()
     fechaRegistro: Date;
-
 }

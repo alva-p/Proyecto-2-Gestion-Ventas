@@ -62,4 +62,17 @@ export class ProveedorService {
     const proveedor = await this.findOne(id);
     await this.proveedorRepository.remove(proveedor);
   }
+
+  async actualizarCantidadProductos(proveedorId: number): Promise<void> {
+    const proveedor = await this.proveedorRepository.findOne({
+      where: { id: proveedorId },
+      relations: ['productos'],
+    });
+
+    if (proveedor) {
+      proveedor.cantidadProductos = proveedor.productos.length;
+      await this.proveedorRepository.save(proveedor);
+    }
+  }
+
 }

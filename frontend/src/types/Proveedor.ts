@@ -4,11 +4,12 @@ import type { Producto } from "./Producto";
 export interface Proveedor {
   id: number;
   nombre: string;
-  contactoNombre?: string;
-  contactoEmail?: string;
+  contactoNombre: string;
+  contactoEmail: string;
   direccion: string;
   telefono: string;
   estado: boolean;            
-  fechaRegistro?: string;     
+  fechaRegistro?: Date;     
+  cantidadProductos: number;
   productos?: Producto[];     
 }

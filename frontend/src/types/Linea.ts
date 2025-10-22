@@ -1,5 +1,6 @@
 // src/types/Linea.ts
 import type { Marca } from "./Marca";
+import type { Producto } from "./Producto";
 
 export interface Linea {
   id: number;
@@ -8,5 +9,7 @@ export interface Linea {
   estado: boolean;
   marcaId: number;
   marca?: Marca;
-  productosCount?: number;
+  cantidadProductos: number;
+  fechaCreacion?: Date;
+  productos?: Producto[];
 }
