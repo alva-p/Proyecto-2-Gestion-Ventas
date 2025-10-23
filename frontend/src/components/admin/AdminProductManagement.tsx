@@ -106,17 +106,13 @@ export function AdminProductManagement() {
       alert('Ya existe una línea con ese nombre');
       return;
     }
-
-    const dto: Omit<Linea, "id"> = {
+    try {
+      const response = await createLinea({
       nombre: newLineData.nombre.trim(),
       descripcion: newLineData.descripcion.trim() || undefined,
       estado: newLineData.estado,
       marcaId: parseInt(newLineData.marcaId),
-    };
-
-
-    try {
-      const response = await createLinea(dto);
+      });
       
       // Recargar las líneas desde el backend para tener datos completos
       const lineasRes = await API.get('/lineas');
@@ -149,14 +145,11 @@ export function AdminProductManagement() {
       return;
     }
 
-    const dto: Omit<Marca, "id"> = {
-      nombre: newBrandData.nombre.trim(),
-      descripcion: newBrandData.descripcion.trim() || undefined,
-    };
-
-
     try {
-      await createMarca(dto);
+      await createMarca({
+        nombre: newBrandData.nombre.trim(),
+        descripcion: newBrandData.descripcion.trim() || undefined,
+      });
       
       // Recargar las marcas desde el backend
       const marcasRes = await API.get('/marca');

@@ -1,8 +1,8 @@
 // frontend/src/components/admin/EnhancedProductManagement.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { getProductos, createProducto, updateProducto, deleteProducto } from "../../services/productService";
-import { getLineas, createLinea, type CreateLineaDTO } from "../../services/lineaService";
-import { getMarcas, createMarca, type CreateMarcaDTO } from "../../services/marcaService";
+import { getLineas, createLinea } from "../../services/lineaService";
+import { getMarcas, createMarca } from "../../services/marcaService";
 import { getProveedores } from "../../services/proveedorService";
 import type { Proveedor } from "../../types/Proveedor";
 import type { Producto } from "../../types/Producto";
@@ -892,32 +892,33 @@ export function EnhancedProductManagement() {
       return;
     }
 
-    // Validar que no exista una línea con el mismo nombre
+    // Validar duplicados
     const exists = lineas.some((l) => l.nombre.toLowerCase() === newLineData.nombre.trim().toLowerCase());
     if (exists) {
       alert("Ya existe una línea con ese nombre");
       return;
     }
 
-    const dto: CreateLineaDTO = {
+    // Construimos el objeto directamente sin DTO
+    const nuevaLineaData = {
       nombre: newLineData.nombre.trim(),
       descripcion: newLineData.descripcion.trim() || undefined,
-      estado: newLineData.estado,
       marcaId: parseInt(newLineData.marcaId),
+      estado: newLineData.estado === "activo",
     };
 
     try {
-      const nuevaLinea = await createLinea(dto);
+      const nuevaLinea = await createLinea(nuevaLineaData);
       const updated = [...lineas, nuevaLinea];
       setLineas(updated);
-      
-      // Seleccionar automáticamente la nueva línea en el formulario
+
+      // Seleccionar la nueva línea automáticamente
       setNewProduct((p) => ({ ...p, lineId: nuevaLinea.id.toString() }));
-      
+
       // Resetear y cerrar diálogo
       setNewLineData({ nombre: "", descripcion: "", marcaId: "", estado: "activo" });
       setIsCreateLineDialogOpen(false);
-      
+
       alert("Línea creada exitosamente");
     } catch (err) {
       console.error("Error creando línea:", err);
@@ -925,39 +926,41 @@ export function EnhancedProductManagement() {
     }
   };
 
+
   const handleCreateBrand = async () => {
     if (!newBrandData.nombre.trim()) {
       alert("El nombre de la marca es obligatorio");
       return;
     }
 
-    // Validar que no exista una marca con el mismo nombre
-    const exists = marcas.some((m) => m.nombre.toLowerCase() === newBrandData.nombre.trim().toLowerCase());
+    const exists = marcas.some(
+      (m) => m.nombre.toLowerCase() === newBrandData.nombre.trim().toLowerCase()
+    );
     if (exists) {
       alert("Ya existe una marca con ese nombre");
       return;
     }
 
-    const dto: CreateMarcaDTO = {
+    const nuevaMarcaData = {
       nombre: newBrandData.nombre.trim(),
       descripcion: newBrandData.descripcion.trim() || undefined,
     };
 
     try {
-      const nuevaMarca = await createMarca(dto);
+      const nuevaMarca = await createMarca(nuevaMarcaData);
       const updated = [...marcas, nuevaMarca];
       setMarcas(updated);
-      
-      // Resetear y cerrar diálogo
+
       setNewBrandData({ nombre: "", descripcion: "" });
       setIsCreateBrandDialogOpen(false);
-      
+
       alert("Marca creada exitosamente. Ahora puede crear una línea asociada a esta marca.");
     } catch (err) {
       console.error("Error creando marca:", err);
       alert("Error al crear la marca");
     }
   };
+
 
   // ------------------------------------------------------------
   // FUNCIONES AUXILIARES
