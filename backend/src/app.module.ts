@@ -54,7 +54,7 @@ import { FacturaModule } from './factura/factura.module';
       ],
       autoLoadEntities: true,
       migrations: ['dist/migrations/*.js'],
-      synchronize: false,
+      synchronize: true,
       ssl: { rejectUnauthorized: false },
       extra: { max: 5,
         connectionTimeoutMillis: 5000, // espera corta

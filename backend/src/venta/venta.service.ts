@@ -18,8 +18,6 @@ export class VentaService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Producto)
     private readonly productoRepository: Repository<Producto>,
-    @InjectRepository(Factura)
-    private readonly facturaRepository: Repository<Factura>,
 
     private readonly facturaService: FacturaService,
   ) {}

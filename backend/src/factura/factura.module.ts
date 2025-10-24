@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacturaService } from './factura.service';
 import { FacturaController } from './factura.controller';
@@ -11,10 +12,10 @@ import { VentaModule } from 'src/venta/venta.module'; // <-- Importante
       Factura, 
       Venta, 
     ]),
-    VentaModule, 
+    forwardRef(() => VentaModule), 
   ],
   controllers: [FacturaController],
   providers: [FacturaService],
-  exports: [FacturaModule],
+  exports: [FacturaService],
 })
 export class FacturaModule {}
