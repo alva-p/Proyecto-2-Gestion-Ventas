@@ -6,6 +6,8 @@ import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
 import { User } from 'src/users/entities/users.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
+import { Factura } from 'src/factura/entities/factura.entity';
+import { FacturaService } from 'src/factura/factura.service';
 
 @Injectable()
 export class VentaService {
@@ -16,10 +18,20 @@ export class VentaService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Producto)
     private readonly productoRepository: Repository<Producto>,
+    @InjectRepository(Factura)
+    private readonly facturaRepository: Repository<Factura>,
+
+    private readonly facturaService: FacturaService,
   ) {}
 
   async create(createVentaDto: CreateVentaDto): Promise<Venta> {
-    const { usuario_id, productos, notas } = createVentaDto;
+    const { 
+      usuario_id, 
+      productos, 
+      notas,
+      cliente_nombre,
+      cliente_documento,
+      tipo } = createVentaDto;
 
     const usuario = await this.userRepository.findOne({ where: { id: usuario_id } });
     if (!usuario) throw new NotFoundException(`Usuario con ID ${usuario_id} no encontrado`);
@@ -41,7 +53,18 @@ export class VentaService {
       notas,
     });
 
-    return this.ventaRepository.save(venta);
+    const ventaGuardada = this.ventaRepository.create(venta);
+
+    const createFacturaDto = {
+      venta_id: ventaGuardada.id,
+      cliente_nombre: cliente_nombre,
+      cliente_documento: cliente_documento,
+      tipo: tipo,
+    }
+
+    const facturaCreada = await this.facturaService.create(createFacturaDto);
+
+    return ventaGuardada;
   }
 
   async findAll(): Promise<any[]> {

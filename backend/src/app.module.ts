@@ -24,6 +24,7 @@ import { Rol } from './rol/entities/rol.entity';
 import { Auditoria } from './auditoria/entities/auditoria.entity';
 import { Linea } from './linea/entities/linea.entity';
 import { Marca } from './marcas/entities/marca.entity';
+import { FacturaModule } from './factura/factura.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { Marca } from './marcas/entities/marca.entity';
     AuditoriaModule,
     LineaModule,
     MarcasModule,
+    FacturaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

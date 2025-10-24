@@ -7,9 +7,11 @@ import {
   CreateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToOne,
 } from 'typeorm';
 import { User } from 'src/users/entities/users.entity';
 import { Producto } from 'src/producto/entities/producto.entity';
+import { Factura } from 'src/factura/entities/factura.entity';
 
 @Entity('venta')
 export class Venta {
@@ -37,4 +39,7 @@ export class Venta {
 
   @CreateDateColumn({ type: 'timestamp' })
   fecha: Date;
+
+  @OneToOne(() => Factura, (factura) => factura.venta, { nullable: true })
+  factura: Factura; // Puede ser nula si la venta aún no se facturó
 }
