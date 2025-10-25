@@ -6,12 +6,13 @@ import { EnhancedProductManagement } from '../admin/EnhancedProductManagement';
 import { AdminBrandManagement } from '../admin/AdminBrandManagement';
 import { BrandLinesManagement } from '../admin/BrandLinesManagement';
 import { SuppliersManagement } from '../admin/SuppliersManagement';
-import { SalesDashboard } from '../admin/SalesDashboard';
+// import { SalesDashboard } from '../admin/SalesDashboard'; // Oculto - se usa Metabase
 import { SalesRegistration } from '../admin/SalesRegistration';
 import { StockAlerts } from '../admin/StockAlerts';
 import { AdminUserManagement } from '../admin/AdminUserManagement';
 import { SystemSettings } from '../admin/SystemSettings';
 import { AuditLog } from '../admin/AuditLog';
+import { InvoiceManagement } from '../admin/InvoiceManagement';
 import { cn } from '@/lib/utils';
 
 type User = {
@@ -35,9 +36,9 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
       case 'catalog':
         return <ProductCatalog />;
       case 'sales-registration':
-        return <SalesRegistration />;
-      case 'sales-dashboard':
-        return <SalesDashboard />;
+        return <SalesRegistration user={user} />;
+      // case 'sales-dashboard': // Oculto - se usa Metabase para estadísticas
+      //   return <SalesDashboard />;
       case 'stock-alerts':
         return <StockAlerts />;
       case 'products':
@@ -48,6 +49,8 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
         return <BrandLinesManagement />;
       case 'suppliers':
         return <SuppliersManagement />;
+      case 'invoices':
+        return <InvoiceManagement />;
       case 'users':
         return <AdminUserManagement />;
       case 'settings':

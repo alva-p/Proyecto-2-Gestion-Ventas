@@ -54,14 +54,17 @@ import { FacturaModule } from './factura/factura.module';
       ],
       autoLoadEntities: true,
       migrations: ['dist/migrations/*.js'],
-      synchronize: true,
-      ssl: { rejectUnauthorized: false },
-      extra: { max: 5,
-        connectionTimeoutMillis: 5000, // espera corta
-        idleTimeoutMillis: 2000, // corta inactivas rápido
-        keepAlive: false, // no mantiene sockets abiertos
-        statement_timeout: 10000, // mata queries muy largas
-       },
+      synchronize: false,
+      ssl: { 
+        rejectUnauthorized: false 
+      },
+      extra: { 
+        max: 10, // aumentado para mejor estabilidad
+        connectionTimeoutMillis: 30000, // 30 segundos
+        idleTimeoutMillis: 10000, // 10 segundos
+        keepAlive: true, // mantiene la conexión activa
+        keepAliveInitialDelayMillis: 10000,
+      },
     }),
 
     // 🔹 Módulos de tu aplicación

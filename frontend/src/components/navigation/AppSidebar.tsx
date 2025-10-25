@@ -20,7 +20,7 @@ import {
   Shield, 
   Settings, 
   FileText,
-  BarChart3,
+  // BarChart3, // No se usa - Dashboard de Ventas oculto
   AlertTriangle,
   Tag,
   Building,
@@ -55,7 +55,7 @@ export function AppSidebar({ user, activeSection, onSectionChange, onLogout }: A
       items: [
         { id: 'catalog', label: 'Catálogo de Productos', icon: Package },
         { id: 'sales-registration', label: 'Registro de Ventas', icon: ShoppingCart },
-        { id: 'sales-dashboard', label: 'Dashboard de Ventas', icon: BarChart3 },
+        // { id: 'sales-dashboard', label: 'Dashboard de Ventas', icon: BarChart3 }, // Oculto - se usa Metabase
         { id: 'stock-alerts', label: 'Alertas de Stock', icon: AlertTriangle },
       ]
     },
@@ -64,8 +64,10 @@ export function AppSidebar({ user, activeSection, onSectionChange, onLogout }: A
       items: [
         { id: 'products', label: 'Productos', icon: Package },
         { id: 'brands', label: 'Marcas', icon: Tag },
-        { id: 'lines', label: 'Líneas', icon: BookOpen },
+        { id: 'lines', label: 'Líneas', icon: BookOpen }, 
         { id: 'suppliers', label: 'Proveedores', icon: Truck },
+        { id: 'invoices', label: 'Gestión de Facturas', icon: FileText },
+
       ]
     },
     {
