@@ -217,7 +217,7 @@ export function SalesRegistration({ user }: SalesRegistrationProps) {
             </Button>
           </DialogTrigger>
           
-          <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-y-auto">
+          <DialogContent className="max-w-[1400px] w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrar Nueva Venta</DialogTitle>
             </DialogHeader>
@@ -376,7 +376,6 @@ export function SalesRegistration({ user }: SalesRegistrationProps) {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Producto</TableHead>
-                        <TableHead>Cantidad</TableHead>
                         <TableHead>Precio Unit.</TableHead>
                         <TableHead>Total</TableHead>
                         <TableHead></TableHead>
@@ -388,25 +387,7 @@ export function SalesRegistration({ user }: SalesRegistrationProps) {
                           <TableCell>
                             <div className="font-medium">{item.productName}</div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                              >
-                                -
-                              </Button>
-                              <span className="w-8 text-center">{item.quantity}</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                              >
-                                +
-                              </Button>
-                            </div>
-                          </TableCell>
+                          
                           <TableCell>${item.unitPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
                           <TableCell className="font-semibold">${item.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
                           <TableCell>
