@@ -2,13 +2,9 @@ import { IsString, IsEmail, IsOptional, MinLength, IsInt } from 'class-validator
 import { Type } from 'class-transformer';
 
 export class CreateAuthDto {
-	@IsOptional()
 	@IsString()
-	nombre?: string;
-
-	@IsOptional()
-	@IsString()
-	telefono?: string;
+	@MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres.' })
+	nombre: string;
 
 	@IsEmail()
 	correo: string;

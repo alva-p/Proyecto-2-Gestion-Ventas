@@ -7,9 +7,6 @@ export class CreateVentaDto {
   @IsArray()
   productos: number[]; 
 
-  @IsNumber()
-  importe_total: number;
-
   @IsOptional()
   @IsString()
   notas?: string;
@@ -22,7 +19,7 @@ export class CreateVentaDto {
 
   @IsString()
   @Length(1, 50)
-  cliente_documento?: string;
+  cliente_documento: string;
 
   @IsNotEmpty()
   @IsString()

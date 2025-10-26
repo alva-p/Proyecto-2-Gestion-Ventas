@@ -6,7 +6,6 @@ export class CreateFacturaDto {
   venta_id: number;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'El número de factura es obligatorio' })
   @IsString()
   @Length(1, 50, { message: 'El número de factura debe tener entre 1 y 50 caracteres' })
   numero_factura?: string;

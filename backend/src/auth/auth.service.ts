@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/users.entity';
 import { RoleName } from 'src/rol/entities/rol.enum';
+import { LoginAuthDto } from './dto/login-auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -26,7 +27,6 @@ export class AuthService {
 
     const user = await this.usersService.create({
       nombre: createAuthDto.nombre,
-      telefono: createAuthDto.telefono,
       correo: createAuthDto.correo,
       contrasena: createAuthDto.contrasena,
       rol_id: rolAdmin.id, // fuerza el rol admin
@@ -35,11 +35,16 @@ export class AuthService {
     return { message: 'Usuario registrado correctamente', user };
   }
 
-  async login(createAuthDto: CreateAuthDto) {
-    const user = await this.usersService['userRepository'].findOne({ where: { correo: createAuthDto.correo }, relations: ['rol'] });
+  async login(loginAuthDto: LoginAuthDto) {
+    const user = await this.usersService['userRepository'].findOne({
+      where: { correo: loginAuthDto.correo },
+      relations: ['rol'],
+    });
     if (!user) throw new UnauthorizedException('Credenciales incorrectas');
-    const isMatch = await bcrypt.compare(createAuthDto.contrasena, user.contrasena);
+
+    const isMatch = await bcrypt.compare(loginAuthDto.contrasena, user.contrasena);
     if (!isMatch) throw new UnauthorizedException('Credenciales incorrectas');
+
     const payload = { sub: user.id, correo: user.correo, rol: user.rol.nombre };
     const token = this.jwtService.sign(payload);
     return { access_token: token, user };

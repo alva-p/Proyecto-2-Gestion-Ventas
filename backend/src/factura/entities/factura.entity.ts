@@ -23,7 +23,7 @@ export class Factura {
   @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
   numero_factura: string;
 
-    @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255 })
   cliente_nombre: string;
 
   @Column({ type: 'varchar', length: 255 })
