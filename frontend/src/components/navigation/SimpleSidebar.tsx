@@ -8,6 +8,7 @@ import {
   Tag,
   BookOpen,
   Truck,
+  FileText,
   Users,
   Settings,
   Shield,
@@ -65,7 +66,6 @@ export function SimpleSidebar({
       items: [
         { id: 'catalog', label: 'Catálogo de Productos', icon: Package },
         { id: 'sales-registration', label: 'Registro de Ventas', icon: ShoppingCart },
-        { id: 'sales-dashboard', label: 'Dashboard de Ventas', icon: BarChart3 },
         { id: 'stock-alerts', label: 'Alertas de Stock', icon: AlertTriangle },
       ]
     },
@@ -76,6 +76,7 @@ export function SimpleSidebar({
         { id: 'brands', label: 'Marcas', icon: Tag },
         { id: 'lines', label: 'Líneas', icon: BookOpen },
         { id: 'suppliers', label: 'Proveedores', icon: Truck },
+        { id: 'invoices', label: 'Facturas', icon: FileText },
       ]
     },
     {

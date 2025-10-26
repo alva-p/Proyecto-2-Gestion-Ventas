@@ -26,6 +26,7 @@ export class VentaService {
     const { 
       usuario_id, 
       productos, 
+      importe_total,
       notas,
       cliente_nombre,
       cliente_documento,
@@ -40,18 +41,15 @@ export class VentaService {
     if (productosEncontrados.length !== productos.length)
       throw new NotFoundException('Uno o más productos no existen');
 
-    const importe_total = productosEncontrados.reduce((total, producto) => {
-      return total + Number(producto.precio);
-    }, 0);
-
     const venta = this.ventaRepository.create({
       usuario,
       productos: productosEncontrados,
-      importe_total,
+      importe_total, // Usar el importe_total del DTO en lugar de calcularlo
       notas,
     });
 
-    const ventaGuardada = this.ventaRepository.create(venta);
+    // Guardar la venta en la base de datos para obtener el ID
+    const ventaGuardada = await this.ventaRepository.save(venta);
 
     const createFacturaDto = {
       venta_id: ventaGuardada.id,

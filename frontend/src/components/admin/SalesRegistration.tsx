@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -13,102 +13,88 @@ import {
   Plus, 
   Package, 
   Search, 
-  Calendar, 
   DollarSign, 
   User, 
   FileText,
   Eye,
-  Edit,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
+import { getProductos } from '../../services/productService';
+import { createVenta, getVentas } from '../../services/ventaService';
+import type { Producto } from '../../types/Producto';
+import type { Venta } from '../../types/venta';
 
-type Product = {
+type UserProp = {
   id: string;
   name: string;
-  brand: string;
-  line: string;
-  supplier: string;
-  price: number;
-  stock: number;
-  code: string;
+  email: string;
+  role: 'admin' | 'auditor';
 };
 
 type SaleItem = {
-  productId: string;
+  productId: number;
   productName: string;
-  productCode: string;
   quantity: number;
   unitPrice: number;
   total: number;
 };
 
-type Sale = {
-  id: string;
-  date: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  items: SaleItem[];
-  total: number;
-  paymentMethod: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  notes: string;
+type SalesRegistrationProps = {
+  user: UserProp;
 };
 
-// Mock data para productos
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Smartphone Galaxy Pro',
-    brand: 'Samsung',
-    line: 'Galaxy',
-    supplier: 'Distribuidora Tech',
-    price: 299999,
-    stock: 15,
-    code: 'SAM001'
-  },
-  {
-    id: '2',
-    name: 'iPhone 15',
-    brand: 'Apple',
-    line: 'iPhone',
-    supplier: 'Tech Supply',
-    price: 899999,
-    stock: 8,
-    code: 'APP002'
-  },
-  {
-    id: '3',
-    name: 'Laptop ThinkPad',
-    brand: 'Lenovo',
-    line: 'ThinkPad',
-    supplier: 'Computech',
-    price: 549999,
-    stock: 12,
-    code: 'LEN003'
-  }
-];
-
-export function SalesRegistration() {
-  const [sales, setSales] = useState<Sale[]>([]);
+export function SalesRegistration({ user }: SalesRegistrationProps) {
+  const [products, setProducts] = useState<Producto[]>([]);
+  const [sales, setSales] = useState<Venta[]>([]);
   const [isAddingSale, setIsAddingSale] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<SaleItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentSale, setCurrentSale] = useState<Partial<Sale>>({
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentSale, setCurrentSale] = useState({
     customerName: '',
-    customerEmail: '',
-    customerPhone: '',
-    paymentMethod: '',
+    customerDocument: '',
+    invoiceType: 'B' as 'A' | 'B' | 'C',
     notes: ''
   });
 
-  const filteredProducts = mockProducts.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  // Cargar productos y ventas al montar
+  useEffect(() => {
+    loadProducts();
+    loadSales();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getProductos();
+      // Filtrar solo productos activos con stock
+      setProducts(data.filter(p => p.estado && p.stock > 0));
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      toast.error('Error al cargar los productos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadSales = async () => {
+    try {
+      const data = await getVentas();
+      console.log('📋 Ventas cargadas:', data);
+      setSales(data);
+    } catch (error) {
+      console.error('Error al cargar ventas:', error);
+    }
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.descripcion?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  const addProductToSale = (product: Product) => {
+  const addProductToSale = (product: Producto) => {
     const existingItem = selectedProducts.find(item => item.productId === product.id);
     
     if (existingItem) {
@@ -124,18 +110,17 @@ export function SalesRegistration() {
     } else {
       const newItem: SaleItem = {
         productId: product.id,
-        productName: product.name,
-        productCode: product.code,
+        productName: product.nombre,
         quantity: 1,
-        unitPrice: product.price,
-        total: product.price
+        unitPrice: product.precio,
+        total: product.precio
       };
       setSelectedProducts(prev => [...prev, newItem]);
     }
   };
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    const product = mockProducts.find(p => p.id === productId);
+  const updateQuantity = (productId: number, newQuantity: number) => {
+    const product = products.find(p => p.id === productId);
     if (!product) return;
 
     if (newQuantity > product.stock) {
@@ -155,53 +140,64 @@ export function SalesRegistration() {
     ));
   };
 
-  const removeProductFromSale = (productId: string) => {
+  const removeProductFromSale = (productId: number) => {
     setSelectedProducts(prev => prev.filter(item => item.productId !== productId));
   };
 
-  const calculateTotals = () => {
-    const total = selectedProducts.reduce((sum, item) => sum + item.total, 0);
-    return { total };
+  const calculateTotal = () => {
+    return selectedProducts.reduce((sum, item) => sum + item.total, 0);
   };
 
-  const completeSale = () => {
-    if (!currentSale.customerName || selectedProducts.length === 0) {
+  const completeSale = async () => {
+    if (!currentSale.customerName || !currentSale.customerDocument || selectedProducts.length === 0) {
       toast.error('Complete los datos del cliente y agregue productos');
       return;
     }
 
-    const { total } = calculateTotals();
-    
-    const newSale: Sale = {
-      id: `SALE-${Date.now()}`,
-      date: new Date().toISOString(),
-      customerName: currentSale.customerName!,
-      customerEmail: currentSale.customerEmail || '',
-      customerPhone: currentSale.customerPhone || '',
-      items: [...selectedProducts],
-      total,
-      paymentMethod: currentSale.paymentMethod || 'efectivo',
-      status: 'completed',
-      notes: currentSale.notes || ''
-    };
+    try {
+      setIsSubmitting(true);
+      const total = calculateTotal();
+      
+      const ventaData = {
+        usuario_id: parseInt(user.id),
+        productos: selectedProducts.map(item => item.productId),
+        importe_total: Number(total), // El total ya es un número
+        notas: currentSale.notes || undefined,
+        cliente_nombre: currentSale.customerName,
+        cliente_documento: currentSale.customerDocument,
+        tipo: currentSale.invoiceType
+      };
 
-    setSales(prev => [newSale, ...prev]);
-    
-    // Reset form
-    setCurrentSale({
-      customerName: '',
-      customerEmail: '',
-      customerPhone: '',
-      paymentMethod: '',
-      notes: ''
-    });
-    setSelectedProducts([]);
-    setIsAddingSale(false);
-    
-    toast.success('Venta registrada exitosamente');
+      console.log('📦 Datos a enviar:', ventaData);
+      console.log('👤 User ID:', user.id, 'tipo:', typeof user.id);
+      console.log('🛒 Productos seleccionados:', selectedProducts);
+
+      const ventaCreada = await createVenta(ventaData);
+      console.log('✅ Venta creada:', ventaCreada);
+      
+      // Recargar ventas
+      await loadSales();
+      
+      // Reset form
+      setCurrentSale({
+        customerName: '',
+        customerDocument: '',
+        invoiceType: 'B',
+        notes: ''
+      });
+      setSelectedProducts([]);
+      setIsAddingSale(false);
+      
+      toast.success('Venta registrada exitosamente. La factura se ha generado automáticamente.');
+    } catch (error: any) {
+      console.error('Error al registrar venta:', error);
+      toast.error(error.response?.data?.message || 'Error al registrar la venta');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const { total } = calculateTotals();
+  const total = calculateTotal();
 
   return (
     <div className="space-y-6">
@@ -221,14 +217,14 @@ export function SalesRegistration() {
             </Button>
           </DialogTrigger>
           
-          <DialogContent className="max-w-[98vw] max-h-[98vh] overflow-y-auto">
+          <DialogContent className="max-w-[1400px] w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrar Nueva Venta</DialogTitle>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Datos del Cliente */}
-              <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* Datos del Cliente - 2 columnas */}
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <User className="w-4 h-4" />
@@ -237,7 +233,7 @@ export function SalesRegistration() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="customerName">Nombre *</Label>
+                    <Label htmlFor="customerName">Nombre del Cliente *</Label>
                     <Input
                       id="customerName"
                       value={currentSale.customerName}
@@ -247,40 +243,28 @@ export function SalesRegistration() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="customerEmail">Email</Label>
+                    <Label htmlFor="customerDocument">Documento *</Label>
                     <Input
-                      id="customerEmail"
-                      type="email"
-                      value={currentSale.customerEmail}
-                      onChange={(e) => setCurrentSale(prev => ({ ...prev, customerEmail: e.target.value }))}
-                      placeholder="Email del cliente"
+                      id="customerDocument"
+                      value={currentSale.customerDocument}
+                      onChange={(e) => setCurrentSale(prev => ({ ...prev, customerDocument: e.target.value }))}
+                      placeholder="DNI, CUIT o CUIL"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="customerPhone">Teléfono</Label>
-                    <Input
-                      id="customerPhone"
-                      value={currentSale.customerPhone}
-                      onChange={(e) => setCurrentSale(prev => ({ ...prev, customerPhone: e.target.value }))}
-                      placeholder="+54 11 1234-5678"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="paymentMethod">Método de Pago</Label>
+                    <Label htmlFor="invoiceType">Tipo de Factura *</Label>
                     <Select 
-                      value={currentSale.paymentMethod} 
-                      onValueChange={(value: string) => setCurrentSale(prev => ({ ...prev, paymentMethod: value }))}
+                      value={currentSale.invoiceType} 
+                      onValueChange={(value: 'A' | 'B' | 'C') => setCurrentSale(prev => ({ ...prev, invoiceType: value }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar método" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="efectivo">Efectivo</SelectItem>
-                        <SelectItem value="transferencia">Transferencia</SelectItem>
-                        <SelectItem value="tarjeta_debito">Tarjeta de Débito</SelectItem>
-                        <SelectItem value="tarjeta_credito">Tarjeta de Crédito</SelectItem>
+                        <SelectItem value="A">Factura A - Responsable Inscripto</SelectItem>
+                        <SelectItem value="B">Factura B - Consumidor Final</SelectItem>
+                        <SelectItem value="C">Factura C - Monotributo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -298,8 +282,8 @@ export function SalesRegistration() {
                 </CardContent>
               </Card>
 
-              {/* Selección de Productos */}
-              <Card>
+              {/* Selección de Productos - 3 columnas */}
+              <Card className="lg:col-span-3">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Package className="w-4 h-4" />
@@ -317,47 +301,66 @@ export function SalesRegistration() {
                     />
                   </div>
                   
-                  <div className="border rounded">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Producto</TableHead>
-                          <TableHead>Precio</TableHead>
-                          <TableHead>Stock</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredProducts.map((product) => (
-                          <TableRow key={product.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{product.name}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {product.brand} - {product.code}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>${product.price.toLocaleString('es-AR')}</TableCell>
-                            <TableCell>
-                              <Badge variant={product.stock > 10 ? 'default' : product.stock > 0 ? 'secondary' : 'destructive'}>
-                                {product.stock}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                onClick={() => addProductToSale(product)}
-                                disabled={product.stock === 0}
-                              >
-                                <Plus className="w-3 h-3" />
-                              </Button>
-                            </TableCell>
+                  {isLoading ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground mt-2">Cargando productos...</p>
+                    </div>
+                  ) : (
+                    <div className="border rounded max-h-[500px] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-background z-10">
+                          <TableRow>
+                            <TableHead>Producto</TableHead>
+                            <TableHead>Precio</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead></TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredProducts.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                No hay productos disponibles
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filteredProducts.map((product) => (
+                              <TableRow key={product.id}>
+                                <TableCell>
+                                  <div>
+                                    <div className="font-medium">{product.nombre}</div>
+                                    {product.descripcion && (
+                                      <div className="text-sm text-muted-foreground">
+                                        {product.descripcion}
+                                      </div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-semibold">
+                                  ${product.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={product.stock > 10 ? 'default' : product.stock > 0 ? 'secondary' : 'destructive'}>
+                                    {product.stock}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => addProductToSale(product)}
+                                    disabled={product.stock === 0}
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -373,7 +376,6 @@ export function SalesRegistration() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Producto</TableHead>
-                        <TableHead>Cantidad</TableHead>
                         <TableHead>Precio Unit.</TableHead>
                         <TableHead>Total</TableHead>
                         <TableHead></TableHead>
@@ -383,32 +385,11 @@ export function SalesRegistration() {
                       {selectedProducts.map((item) => (
                         <TableRow key={item.productId}>
                           <TableCell>
-                            <div>
-                              <div className="font-medium">{item.productName}</div>
-                              <div className="text-sm text-muted-foreground">{item.productCode}</div>
-                            </div>
+                            <div className="font-medium">{item.productName}</div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                              >
-                                -
-                              </Button>
-                              <span className="w-8 text-center">{item.quantity}</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                              >
-                                +
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell>${item.unitPrice.toLocaleString('es-AR')}</TableCell>
-                          <TableCell>${item.total.toLocaleString('es-AR')}</TableCell>
+                          
+                          <TableCell>${item.unitPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
+                          <TableCell className="font-semibold">${item.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
                           <TableCell>
                             <Button
                               size="sm"
@@ -431,12 +412,29 @@ export function SalesRegistration() {
                   </div>
                   
                   <div className="mt-6 flex space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingSale(false)}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddingSale(false)}
+                      disabled={isSubmitting}
+                    >
                       Cancelar
                     </Button>
-                    <Button onClick={completeSale} className="flex-1">
-                      <DollarSign className="w-4 h-4 mr-2" />
-                      Completar Venta
+                    <Button 
+                      onClick={completeSale} 
+                      className="flex-1"
+                      disabled={isSubmitting || selectedProducts.length === 0}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Procesando...
+                        </>
+                      ) : (
+                        <>
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          Completar Venta y Generar Factura
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
@@ -465,41 +463,38 @@ export function SalesRegistration() {
                   <TableHead>ID Venta</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Cliente</TableHead>
+                  <TableHead>Vendedor</TableHead>
                   <TableHead>Items</TableHead>
                   <TableHead>Total</TableHead>
-                  <TableHead>Método Pago</TableHead>
-                  <TableHead>Estado</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sales.map((sale) => (
                   <TableRow key={sale.id}>
-                    <TableCell className="font-mono text-sm">{sale.id}</TableCell>
-                    <TableCell>{new Date(sale.date).toLocaleDateString('es-AR')}</TableCell>
+                    <TableCell className="font-mono text-sm">#{sale.id}</TableCell>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{sale.customerName}</div>
-                        {sale.customerEmail && (
-                          <div className="text-sm text-muted-foreground">{sale.customerEmail}</div>
-                        )}
-                      </div>
+                      {sale.fecha ? new Date(sale.fecha).toLocaleDateString('es-AR') : 'N/A'}
                     </TableCell>
-                    <TableCell>{sale.items.length} producto(s)</TableCell>
-                    <TableCell>${sale.total.toLocaleString('es-AR')}</TableCell>
-                    <TableCell className="capitalize">{sale.paymentMethod.replace('_', ' ')}</TableCell>
                     <TableCell>
-                      <Badge variant={
-                        sale.status === 'completed' ? 'default' :
-                        sale.status === 'pending' ? 'secondary' : 'destructive'
-                      }>
-                        {sale.status === 'completed' ? 'Completada' :
-                         sale.status === 'pending' ? 'Pendiente' : 'Cancelada'}
-                      </Badge>
+                      {sale.usuario ? (
+                        <>
+                          <div className="font-medium">{sale.usuario.nombre}</div>
+                          <div className="text-sm text-muted-foreground">{sale.usuario.correo}</div>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Sin usuario</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{sale.usuario?.nombre || 'N/A'}</TableCell>
+                    <TableCell>{sale.productos?.length || 0} producto(s)</TableCell>
+                    <TableCell className="font-semibold">
+                      ${(sale.importe_total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell>
                       <Button size="sm" variant="outline">
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3 h-3 mr-1" />
+                        Ver
                       </Button>
                     </TableCell>
                   </TableRow>

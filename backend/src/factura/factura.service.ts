@@ -40,9 +40,13 @@ export class FacturaService {
       );
     }
 
-    const ultimaFactura = await this.facturaRepository.findOne({
+    // Buscar la última factura para generar el siguiente número
+    const facturas = await this.facturaRepository.find({
       order: { id: 'DESC' },
+      take: 1,
     });
+    const ultimaFactura = facturas[0];
+    
     const siguienteNumero = ultimaFactura
       ? (parseInt(ultimaFactura.numero_factura.split('-')[1]) + 1).toString().padStart(6, '0')
       : '000001';
@@ -50,7 +54,7 @@ export class FacturaService {
     const numeroFactura = `FAC-${siguienteNumero}`;
 
     const nuevaFactura = this.facturaRepository.create({
-      ...dtoData, // numero_factura, cliente_nombre, etc.
+      ...dtoData, // cliente_nombre, cliente_documento, tipo
       venta: venta, // Asignamos la entidad Venta completa
       numero_factura: numeroFactura,
     });
@@ -58,12 +62,16 @@ export class FacturaService {
   }
 
   findAll(): Promise<Factura[]> {
-    return this.facturaRepository.find();
+    return this.facturaRepository.find({
+      relations: ['venta', 'venta.productos', 'venta.usuario'],
+      order: { id: 'DESC' },
+    });
   }
 
   async findOne(id: number): Promise<Factura> {
     const factura = await this.facturaRepository.findOne({
       where: { id: id },
+      relations: ['venta', 'venta.productos', 'venta.usuario'],
     });
 
     if (!factura) {
