@@ -37,7 +37,11 @@ import { FacturaModule } from './factura/factura.module';
     // ✅ Conexión estable para Supabase (puerto 6543 con pooler)
     TypeOrmModule.forRoot({
   type: 'postgres',
-  url: process.env.DATABASE_URL, // ✅ conexión unificada
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '6543', 10),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   entities: [
     Producto,
     Proveedor,
@@ -50,19 +54,19 @@ import { FacturaModule } from './factura/factura.module';
   ],
   autoLoadEntities: true,
   migrations: ['dist/migrations/*.js'],
-  synchronize: false, // ❗ mantenelo en false para no perder datos
-  ssl: {
-    rejectUnauthorized: false, // ⚡ necesario para Supabase/Render
+  synchronize: false,
+  ssl: { 
+    rejectUnauthorized: false 
   },
-  extra: {
-    max: 10, // conexiones simultáneas
+  extra: { 
+    max: 10, // aumentado para mejor estabilidad
     connectionTimeoutMillis: 30000, // 30 segundos
     idleTimeoutMillis: 10000, // 10 segundos
-    keepAlive: true, // mantiene conexión activa
+    keepAlive: true, // mantiene la conexión activa
     keepAliveInitialDelayMillis: 10000,
   },
-  logging: true, // 👀 opcional: te ayuda a ver en logs si la conexión se hace correctamente
 }),
+
 
 
     // 🔹 Módulos de tu aplicación
