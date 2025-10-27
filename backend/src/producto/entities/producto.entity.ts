@@ -8,9 +8,9 @@ import {
   JoinTable,
   JoinColumn,
 } from 'typeorm';
-import { Linea } from 'src/linea/entities/linea.entity';
-import { Proveedor } from 'src/proveedor/entities/proveedor.entity';
-import { Venta } from 'src/venta/entities/venta.entity';
+import { Linea } from '../../linea/entities/linea.entity';
+import { Proveedor } from '../../proveedor/entities/proveedor.entity';
+import { Venta } from '../../venta/entities/venta.entity';
 
 @Entity('producto')
 export class Producto {

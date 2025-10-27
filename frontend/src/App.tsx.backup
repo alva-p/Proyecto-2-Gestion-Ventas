@@ -1,0 +1,68 @@
+﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { LoginPage } from './components/auth/LoginPage';
+import { RegisterPage } from './components/auth/RegisterPage';
+import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
+import { Dashboard } from './components/dashboard/Dashboard';
+import { ThemeProvider } from './components/theme/ThemeProvider';
+import { Toaster } from './components/ui/sonner';
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'auditor';
+};
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const handleLogin = (email: string) => {
+    if (email.includes('auditor')) {
+      setCurrentUser({
+        id: '2',
+        name: 'Auditor',
+        email: email,
+        role: 'auditor'
+      });
+    } else {
+      setCurrentUser({
+        id: '1',
+        name: 'Admin',
+        email: email,
+        role: 'admin'
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
+
+  const handleRegister = (userData: any) => {
+    setCurrentUser({
+      id: '4',
+      name: userData.name,
+      email: userData.email,
+      role: 'admin'
+    });
+  };
+
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-background">
+          <Routes>
+            <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} onNavigateToRegister={() => {}} onNavigateToForgotPassword={() => {}} />} />
+            <Route path="/register" element={currentUser ? <Navigate to="/dashboard" replace /> : <RegisterPage onRegister={handleRegister} onNavigateToLogin={() => {}} />} />
+            <Route path="/forgot-password" element={currentUser ? <Navigate to="/dashboard" replace /> : <ForgotPasswordPage onNavigateToLogin={() => {}} />} />
+            <Route path="/dashboard/*" element={currentUser ? <Dashboard user={currentUser} onLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
+            <Route path="*" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
+          </Routes>
+          <Toaster />
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}

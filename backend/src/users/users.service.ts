@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/users.entity';
-import { Rol } from 'src/rol/entities/rol.entity';
+import { Rol } from '../rol/entities/rol.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -33,7 +33,7 @@ export class UsersService {
       correo: dto.correo,
       contrasena: hash,
       activo: dto.activo ?? true,
-      rol,
+      rol, // Crear rol preterminado
     });
 
     return this.userRepository.save(nuevoUsuario);

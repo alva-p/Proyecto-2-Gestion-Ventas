@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { Producto } from './entities/producto.entity';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-import { Linea } from 'src/linea/entities/linea.entity';
-import { Proveedor } from 'src/proveedor/entities/proveedor.entity';
-
+import { Linea } from '../linea/entities/linea.entity';
+import { Proveedor } from '../proveedor/entities/proveedor.entity';
+import { ProveedorService } from '../proveedor/proveedor.service';
 @Injectable()
 export class ProductoService {
   constructor(
@@ -18,6 +18,8 @@ export class ProductoService {
 
     @InjectRepository(Proveedor)
     private readonly proveedorRepository: Repository<Proveedor>,
+
+    private readonly proveedorService: ProveedorService,
   ) {}
 
   async create(dto: CreateProductoDto): Promise<Producto> {
@@ -31,6 +33,9 @@ export class ProductoService {
       proveedores = await this.proveedorRepository.findByIds(proveedorId);
       if (proveedores.length === 0)
         throw new NotFoundException(`Ninguno de los proveedores existe`);
+      for (const id of proveedorId) {
+        await this.proveedorService.actualizarCantidadProductos(id);
+      }
     }
     // Crear el producto con las relaciones
     const nuevo = this.productoRepository.create({

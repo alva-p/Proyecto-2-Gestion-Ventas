@@ -1,11 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateRolDto } from './create-rol.dto';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { RoleName } from '../entities/rol.enum';
 
 export class UpdateRolDto extends PartialType(CreateRolDto) {
   @IsOptional()
-  @IsString()
-  nombre?: string;
+  @IsEnum(RoleName)
+  nombre?: RoleName;
 
   @IsOptional()
   @IsString()

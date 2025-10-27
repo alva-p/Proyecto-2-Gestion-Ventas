@@ -1,5 +1,15 @@
 {
   "dependencies": {
-    "bcrypt": "^6.0.0"
+    "@nestjs/jwt": "^11.0.1",
+    "@nestjs/passport": "^11.0.5",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "eslint": "^9.38.0",
+    "ts-jest": "^29.4.5"
   }
 }

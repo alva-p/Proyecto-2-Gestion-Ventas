@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateProveedorDto {
     @IsString()
@@ -16,10 +16,9 @@ export class CreateProveedorDto {
     @IsString()
     direccion: string;
 
-    @IsString()
-    estado: string;
+    @IsBoolean()
+    estado: boolean;
 
     @IsOptional()
     fechaRegistro: Date;
-
 }

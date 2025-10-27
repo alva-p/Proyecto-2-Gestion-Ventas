@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { Producto } from 'src/producto/entities/producto.entity';
+import { Producto } from '../../producto/entities/producto.entity';
 
 @Entity('proveedor')
 export class Proveedor {
@@ -21,12 +21,14 @@ export class Proveedor {
   @Column({ type: 'varchar', length: 150 })
   direccion: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  estado: string;
+  @Column({ default: true })
+  estado: boolean;
 
   @Column({ type: 'date', name: 'fecha_registro', default: () => 'CURRENT_DATE' })
   fechaRegistro: Date;
 
+  @Column({ name: 'cantidad_productos', default: 0 })
+  cantidadProductos: number;
   // 👇 Relación N:N con producto
   @ManyToMany(() => Producto, (producto) => producto.proveedores)
   productos: Producto[];

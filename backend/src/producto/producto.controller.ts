@@ -11,13 +11,17 @@ import {
 import { ProductoService } from './producto.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
+import { ExistsPipe } from '../pipes/exists.pipe';
 
 @Controller('producto')
 export class ProductoController {
   constructor(private readonly productoService: ProductoService) {}
 
   @Post()
-  create(@Body() dto: CreateProductoDto) {
+  create(
+    @Body('lineaId', ExistsPipe.for('Linea')) lineaId: number,
+    @Body() dto: CreateProductoDto,
+  ) {
     return this.productoService.create(dto);
   }
 

@@ -1,6 +1,6 @@
 //marca.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany} from 'typeorm';
-import { Linea } from 'src/linea/entities/linea.entity';
+import { Linea } from '../../linea/entities/linea.entity';
 
 @Entity('marca')
 export class Marca {

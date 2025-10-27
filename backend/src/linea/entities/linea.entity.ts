@@ -1,7 +1,8 @@
 //linea.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { Marca } from 'src/marcas/entities/marca.entity';
-import { Producto } from 'src/producto/entities/producto.entity';
+import { Marca } from '../../marcas/entities/marca.entity';
+import { Producto } from '../../producto/entities/producto.entity';
+import { BlobOptions } from 'buffer';
 
 @Entity('linea')
 export class Linea {
@@ -14,8 +15,8 @@ export class Linea {
   @Column({ nullable: true })
   descripcion: string;
 
-  @Column({ default: 'activo' })
-  estado: string;
+  @Column({ default: true })
+  estado: boolean;
 
   @Column({ name: 'cantidad_productos', default: 0 })
   cantidadProductos: number;
@@ -24,7 +25,7 @@ export class Linea {
   fechaCreacion: Date;
 
   @ManyToOne(() => Marca, (marca) => marca.lineas, { eager: true })
-  @JoinColumn({ name: 'marcaId' }) // 👈 agrega FK marcaId en la tabla línea
+  @JoinColumn({ name: 'marcaId' })
   marca: Marca;
 
   @OneToMany(() => Producto, (producto) => producto.linea)

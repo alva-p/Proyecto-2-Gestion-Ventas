@@ -1,4 +1,9 @@
+import { IsString, IsOptional } from 'class-validator';
 export class CreateMarcaDto {
-    nombre: string;
-    descripcion: string;
+  @IsString()
+  nombre: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
 }
