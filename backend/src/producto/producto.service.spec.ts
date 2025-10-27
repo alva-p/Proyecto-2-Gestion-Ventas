@@ -1,3 +1,4 @@
+// backend/src/producto/producto.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductoService } from './producto.service';
 import { getRepositoryToken } from '@nestjs/typeorm';

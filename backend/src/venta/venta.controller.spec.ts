@@ -1,3 +1,4 @@
+// backend/src/venta/venta.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { VentaController } from './venta.controller';
 import { VentaService } from './venta.service';
