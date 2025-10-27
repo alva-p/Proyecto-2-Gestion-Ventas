@@ -3,7 +3,6 @@ import {
   ShoppingBag,
   Package,
   ShoppingCart,
-  BarChart3,
   AlertTriangle,
   Tag,
   BookOpen,

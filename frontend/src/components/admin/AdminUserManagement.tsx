@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Switch } from '../ui/switch';
-import { Users, Search, Edit, Shield, Settings, UserPlus, Eye, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { Users, Search, Shield, Eye, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 
 type User = {
   id: string;
@@ -93,7 +93,6 @@ export function AdminUserManagement() {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);

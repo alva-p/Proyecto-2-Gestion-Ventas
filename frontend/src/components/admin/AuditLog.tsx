@@ -7,8 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { ScrollArea } from '../ui/scroll-area';
-import { Search, Download, Shield, AlertTriangle, Info, CheckCircle, XCircle, Eye, Calendar, Filter } from 'lucide-react';
+import { Search, Download, Shield, AlertTriangle, Info, CheckCircle, XCircle, Eye } from 'lucide-react';
 
 type AuditEvent = {
   id: string;
@@ -119,7 +118,7 @@ const mockAuditEvents: AuditEvent[] = [
 ];
 
 export function AuditLog() {
-  const [events, setEvents] = useState<AuditEvent[]>(mockAuditEvents);
+  const [events] = useState<AuditEvent[]>(mockAuditEvents);
   const [filteredEvents, setFilteredEvents] = useState<AuditEvent[]>(mockAuditEvents);
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
@@ -169,7 +168,6 @@ export function AuditLog() {
 
     if (date !== 'all') {
       const now = new Date();
-      const eventDate = new Date();
       
       switch (date) {
         case 'today':

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
 } from '../ui/sidebar';
 import { 
   ShoppingBag, 
@@ -23,7 +20,6 @@ import {
   // BarChart3, // No se usa - Dashboard de Ventas oculto
   AlertTriangle,
   Tag,
-  Building,
   Truck,
   User,
   LogOut,

@@ -29,46 +29,29 @@ import { FacturaModule } from './factura/factura.module';
 
 @Module({
   imports: [
-    // ✅ Carga global del ConfigModule
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: false, // usa .env localmente; Render usa variables de entorno
     }),
 
-    // ✅ Conexión estable para Supabase (puerto 6543 con pooler)
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '6543', 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      entities: [
-        Producto,
-        Proveedor,
-        User,
-        Venta,
-        Rol,
-        Auditoria,
-        Linea,
-        Marca,
-      ],
+      url: process.env.DATABASE_URL || undefined,
+      host: !process.env.DATABASE_URL ? process.env.DB_HOST : undefined,
+      port: !process.env.DATABASE_URL ? parseInt(process.env.DB_PORT || '6543', 10) : undefined,
+      username: !process.env.DATABASE_URL ? process.env.DB_USER : undefined,
+      password: !process.env.DATABASE_URL ? process.env.DB_PASS : undefined,
+      database: !process.env.DATABASE_URL ? process.env.DB_NAME : undefined,
+      entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
       autoLoadEntities: true,
-      migrations: ['dist/migrations/*.js'],
       synchronize: false,
-      ssl: { 
-        rejectUnauthorized: false 
+      ssl: {
+        rejectUnauthorized: false,
       },
-      extra: { 
-        max: 10, // aumentado para mejor estabilidad
-        connectionTimeoutMillis: 30000, // 30 segundos
-        idleTimeoutMillis: 10000, // 10 segundos
-        keepAlive: true, // mantiene la conexión activa
-        keepAliveInitialDelayMillis: 10000,
+      extra: {
+        max: 5,
       },
     }),
 
-    // 🔹 Módulos de tu aplicación
     ProductoModule,
     ProveedorModule,
     UsersModule,

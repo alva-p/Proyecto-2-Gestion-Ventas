@@ -5,7 +5,7 @@ import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { Search, ShoppingCart, Star, Grid, List } from 'lucide-react';
+import { Search, ShoppingCart, Grid, List } from 'lucide-react';
 import API from '../../index'; // 👈 usa tu instancia de axios
 
 type Product = {

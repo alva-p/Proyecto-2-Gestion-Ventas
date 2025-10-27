@@ -1,5 +1,5 @@
 // frontend/src/components/admin/AdminBrandManagement.tsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { getMarcas, createMarca, updateMarca, deleteMarca } from "../../services/marcaService";
 import type { Marca } from "../../types/Marca";
 import { Button } from "../ui/button";
@@ -21,18 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Plus, Edit, Trash2, Tag, Search } from "lucide-react";
 
 export function AdminBrandManagement() {
@@ -43,8 +32,6 @@ export function AdminBrandManagement() {
   const [editingBrand, setEditingBrand] = useState<Marca | null>(null);
   const [newBrand, setNewBrand] = useState({ nombre: "", descripcion: "" });
   const [validationError, setValidationError] = useState("");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 🔹 Cargar marcas del backend
   useEffect(() => {

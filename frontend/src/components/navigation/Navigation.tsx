@@ -1,7 +1,6 @@
-import React from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { LogOut, User, ShoppingBag, Package, Users, Shield, Settings } from 'lucide-react';
+import { LogOut, User, ShoppingBag, Shield, Settings } from 'lucide-react';
 import { ThemeToggle } from '../theme/ThemeToggle';
 
 type User = {

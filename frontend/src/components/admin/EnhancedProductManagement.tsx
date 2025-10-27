@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Plus, Edit, Trash2, Package, Upload, Search, Eye, X, Building2, Star, ArrowUp, ArrowDown, Image as ImageIcon, Grid3X3, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Search, X, Building2, Star, ArrowUp, ArrowDown, AlertTriangle } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 type ProductImage = {
@@ -77,8 +77,6 @@ type ProductFormProps = {
   moveImage: (imageId: string, direction: "up" | "down") => void;
   addSupplier: () => void;
   removeSupplier: (supplierId: string) => void;
-  getStatusBadge: (status: string) => React.ReactElement;
-  formatCurrency: (amount: number) => string;
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setEditingProduct: React.Dispatch<React.SetStateAction<Producto | null>>;
   resetForm: () => void;
@@ -127,8 +125,6 @@ const ProductFormComponent = React.memo<ProductFormProps>(
     moveImage,
     addSupplier,
     removeSupplier,
-    getStatusBadge,
-    formatCurrency,
     setIsCreateModalOpen,
     setEditingProduct,
     resetForm,
@@ -995,17 +991,6 @@ export function EnhancedProductManagement() {
     setNewSupplierData({ supplierId: "", supplierCode: "" });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-500 text-white">Activo</Badge>;
-      case "inactive":
-        return <Badge className="bg-red-500 text-white">Inactivo</Badge>;
-      default:
-        return <Badge variant="outline">Borrador</Badge>;
-    }
-  };
-
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(amount);
 
@@ -1180,8 +1165,6 @@ export function EnhancedProductManagement() {
               removeSupplier={(id) =>
                 setProductSuppliers((prev) => prev.filter((s) => s.id !== id))
               }
-              getStatusBadge={getStatusBadge}
-              formatCurrency={formatCurrency}
               setIsCreateModalOpen={setIsCreateModalOpen}
               setEditingProduct={setEditingProduct}
               resetForm={resetForm}

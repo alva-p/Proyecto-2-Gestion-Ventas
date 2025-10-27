@@ -119,27 +119,6 @@ export function SalesRegistration({ user }: SalesRegistrationProps) {
     }
   };
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    if (newQuantity > product.stock) {
-      toast.error('Cantidad excede el stock disponible');
-      return;
-    }
-
-    if (newQuantity <= 0) {
-      removeProductFromSale(productId);
-      return;
-    }
-
-    setSelectedProducts(prev => prev.map(item =>
-      item.productId === productId
-        ? { ...item, quantity: newQuantity, total: newQuantity * item.unitPrice }
-        : item
-    ));
-  };
-
   const removeProductFromSale = (productId: number) => {
     setSelectedProducts(prev => prev.filter(item => item.productId !== productId));
   };
