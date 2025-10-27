@@ -11,12 +11,26 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT ?? 3000;
 
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://proyecto-2-gestion-ventas.vercel.app',
+  ];
+
+  // Agregar FRONTEND_URL si está definida
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
+
   const corsOptions: CorsOptions = {
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.FRONTEND_URL || 'http://localhost:5173',
-    ],
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origen (como Postman) o desde orígenes permitidos
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   };
   app.enableCors(corsOptions);
