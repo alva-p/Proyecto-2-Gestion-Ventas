@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacturaService } from './factura.service';
 import { FacturaController } from './factura.controller';
 import { Factura } from './entities/factura.entity';
-import { Venta } from 'src/venta/entities/venta.entity'; // <-- Importante
-import { VentaModule } from 'src/venta/venta.module'; // <-- Importante
+import { Venta } from '../venta/entities/venta.entity'; // <-- Importante
+import { VentaModule } from '../venta/venta.module'; // <-- Importante
 @Module({
   imports: [
     TypeOrmModule.forFeature([
