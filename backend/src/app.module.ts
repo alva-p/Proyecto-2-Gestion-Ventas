@@ -35,11 +35,12 @@ import { FacturaModule } from './factura/factura.module';
 
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '6543', 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
+      url: process.env.DATABASE_URL || undefined,
+      host: !process.env.DATABASE_URL ? process.env.DB_HOST : undefined,
+      port: !process.env.DATABASE_URL ? parseInt(process.env.DB_PORT || '6543', 10) : undefined,
+      username: !process.env.DATABASE_URL ? process.env.DB_USER : undefined,
+      password: !process.env.DATABASE_URL ? process.env.DB_PASS : undefined,
+      database: !process.env.DATABASE_URL ? process.env.DB_NAME : undefined,
       entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
       autoLoadEntities: true,
       synchronize: false,
