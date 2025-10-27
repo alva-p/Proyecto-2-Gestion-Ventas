@@ -34,11 +34,11 @@ import { FacturaModule } from './factura/factura.module';
       ignoreEnvFile: false, // usa .env localmente; Render usa variables de entorno
     }),
 
-    // ✅ Conexión estable para Supabase
+    // ✅ Conexión directa para Supabase (puerto 5432)
     TypeOrmModule.forRoot({
   type: 'postgres',
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '6543', 10),
+  port: parseInt(process.env.DB_PORT || '5432', 10),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
