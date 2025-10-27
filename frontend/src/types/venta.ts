@@ -1,6 +1,12 @@
+export type ProductoVentaDto = {
+  productoId: number;
+  cantidad: number;
+  precio_unitario: number;
+};
+
 export type CreateVentaDto = {
   usuario_id: number;
-  productos: number[];
+  productos: ProductoVentaDto[];
   importe_total: number;
   notas?: string;
   cliente_nombre: string;
