@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '../ui/alert';
 
 type ForgotPasswordPageProps = {
@@ -29,10 +29,6 @@ export function ForgotPasswordPage({ onNavigateToLogin }: ForgotPasswordPageProp
     }
     alert('Contraseña actualizada exitosamente');
     onNavigateToLogin();
-  };
-
-  const simulateEmailClick = () => {
-    setStep('reset');
   };
 
   if (step === 'sent') {

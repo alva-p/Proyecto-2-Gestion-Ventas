@@ -9,7 +9,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { Plus, Edit, Trash2, Building2, Search, Phone, Mail, MapPin } from 'lucide-react';
-import { getProveedores, createProveedor, updateProveedor, deleteProveedor } from '../../services/proveedorService';
+import { getProveedores, createProveedor, deleteProveedor } from '../../services/proveedorService';
 import type { Proveedor } from '../../types/Proveedor';
 
 // Componente SupplierForm separado
@@ -139,7 +139,7 @@ export function SuppliersManagement() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingSupplier, setEditingSupplier] = useState<Proveedor | null>(null);
+  const [, setEditingSupplier] = useState<Proveedor | null>(null);
   const [deleteAttempt, setDeleteAttempt] = useState<{ supplier: Proveedor; hasProducts: boolean } | null>(null);
   const [newSupplier, setNewSupplier] = useState({
     name: '',
@@ -206,28 +206,6 @@ export function SuppliersManagement() {
       address: supplier.direccion,
       status: supplier.estado ? 'active' : 'inactive',
     });
-  };
-
-  const handleUpdateSupplier = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingSupplier) return;
-    try {
-      const updated = await updateProveedor(editingSupplier.id, {
-        nombre: newSupplier.name,
-        contactoNombre: newSupplier.contact,
-        contactoEmail: newSupplier.email,
-        telefono: newSupplier.phone,
-        direccion: newSupplier.address,
-        estado: newSupplier.status === 'active',
-      });
-      const updatedSuppliers = suppliers.map((s) => (s.id === updated.id ? updated : s));
-      setSuppliers(updatedSuppliers);
-      setFilteredSuppliers(updatedSuppliers);
-      setEditingSupplier(null);
-      resetForm();
-    } catch (error) {
-      console.error('Error al actualizar proveedor:', error);
-    }
   };
 
   const handleDeleteAttempt = (supplier: Proveedor) => {

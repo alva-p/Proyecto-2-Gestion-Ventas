@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { AlertTriangle, Package, Settings, RefreshCw, Filter, Search } from 'lucide-react';
+import { AlertTriangle, Package, Settings, RefreshCw, Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 type StockStatus = 'ok' | 'low' | 'critical';
