@@ -34,12 +34,10 @@ export class VentaService {
     const usuario = await this.userRepository.findOne({ where: { id: usuario_id } });
     if (!usuario) throw new NotFoundException(`Usuario con ID ${usuario_id} no encontrado`);
 
-    // Extraer IDs únicos y mapear cantidades/precios
+    // Cantidades por producto (cuenta repeticiones)
     const cantidades: Record<number, number> = {};
-    const precios: Record<number, number> = {};
-    for (const prod of productos) {
-      cantidades[prod.productoId] = (cantidades[prod.productoId] ?? 0) + prod.cantidad;
-      precios[prod.productoId] = prod.precio_unitario;
+    for (const id of productos) {
+      cantidades[id] = (cantidades[id] ?? 0) + 1;
     }
     const uniqueIds = Object.keys(cantidades).map(Number);
 
@@ -51,7 +49,7 @@ export class VentaService {
       throw new NotFoundException('Uno o más productos no existen');
     }
 
-    // Verificación de stock
+    // Verificación de stock simple
     for (const p of productosEncontrados) {
       const qty = cantidades[p.id];
       if (p.stock < qty) {
@@ -68,11 +66,10 @@ export class VentaService {
       notas,
     });
 
-    // Calcular importe_total usando el precio_unitario enviado
+    // Calcular importe_total (precio * cantidad)
     const total = productosEncontrados.reduce((acc, p) => {
       const qty = cantidades[p.id];
-      const precio = precios[p.id] ?? Number(p.precio);
-      return acc + precio * qty;
+      return acc + Number(p.precio) * qty;
     }, 0);
     venta.importe_total = Number(total.toFixed(2));
 
@@ -156,7 +153,7 @@ export class VentaService {
 
     if (productos && productos.length > 0) {
       const cantidades: Record<number, number> = {};
-      for (const prod of productos) cantidades[prod.productoId] = (cantidades[prod.productoId] ?? 0) + prod.cantidad;
+      for (const pid of productos) cantidades[pid] = (cantidades[pid] ?? 0) + 1;
       const uniqueIds = Object.keys(cantidades).map(Number);
 
       const productosEncontrados = await this.productoRepository.find({

@@ -1,4 +1,4 @@
-// backend/src/venta/venta.service.spec.ts
+// 
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
