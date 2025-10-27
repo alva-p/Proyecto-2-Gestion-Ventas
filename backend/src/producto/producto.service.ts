@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { Producto } from './entities/producto.entity';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-import { Linea } from 'src/linea/entities/linea.entity';
-import { Proveedor } from 'src/proveedor/entities/proveedor.entity';
-import { ProveedorService } from 'src/proveedor/proveedor.service';
+import { Linea } from '../linea/entities/linea.entity';
+import { Proveedor } from '../proveedor/entities/proveedor.entity';
+import { ProveedorService } from '../proveedor/proveedor.service';
 @Injectable()
 export class ProductoService {
   constructor(

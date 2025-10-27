@@ -1,3 +1,4 @@
+// backend/src/factura/entities/factura.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -16,6 +17,7 @@ export class Factura {
   @OneToOne(() => Venta, (venta) => venta.factura, { // Asumimos que agregarás 'factura' a Venta
     eager: true, // Carga la venta automáticamente al consultar la factura
     nullable: false, // Una factura NO puede existir sin una venta
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'venta_id' })
   venta: Venta;

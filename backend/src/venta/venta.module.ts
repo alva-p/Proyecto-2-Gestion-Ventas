@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { VentaService } from './venta.service';
 import { VentaController } from './venta.controller';
 import { Venta } from './entities/venta.entity';
-import { User } from 'src/users/entities/users.entity';
-import { Producto } from 'src/producto/entities/producto.entity';
-import { FacturaModule } from 'src/factura/factura.module';
+import { User } from '../users/entities/users.entity';
+import { Producto } from '../producto/entities/producto.entity';
+import { FacturaModule } from '../factura/factura.module';
 
 @Module({
   imports: [
