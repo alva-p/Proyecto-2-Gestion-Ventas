@@ -12,7 +12,11 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
 
   const corsOptions: CorsOptions = {
-    origin: 'http://localhost:5173', // dirección de tu Vite
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+    ],
     credentials: true,
   };
   app.enableCors(corsOptions);
