@@ -3,7 +3,19 @@ services:
     name: backend-gestion-ventas
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DB_HOST
+        sync: false # Configurar manualmente en Render Dashboard
+      - key: DB_PORT
+        value: 6543
+      - key: DB_USER
+        sync: false # Configurar manualmente en Render Dashboard
+      - key: DB_PASS
+        sync: false # Configurar manualmente en Render Dashboard
+      - key: DB_NAME
+        value: postgres
+      - key: PORT
+        value: 3000
