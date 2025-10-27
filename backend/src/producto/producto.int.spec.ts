@@ -11,10 +11,19 @@ import { Producto } from './entities/producto.entity';
 describe('Producto (Integración)', () => {
   let app: INestApplication;
   let httpServer: any;
+  let dataSource: DataSource;
   let lineaCreada: Linea;
   let proveedorCreado: Proveedor;
   let productoCreado: Producto;
   let marcaId: number;
+
+  /** 🔹 Función de limpieza reutilizable */
+  const limpiarDatos = async () => {
+    await dataSource.query(`DELETE FROM producto WHERE nombre LIKE 'Aceite%'`);
+    await dataSource.query(`DELETE FROM proveedor WHERE nombre = 'Proveedor Test'`);
+    await dataSource.query(`DELETE FROM linea WHERE nombre = 'Línea Test'`);
+    await dataSource.query(`DELETE FROM marca WHERE nombre LIKE 'Marca Test%'`);
+  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,20 +33,25 @@ describe('Producto (Integración)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-    const dataSource = app.get(DataSource);
+    dataSource = app.get(DataSource);
     ExistsPipe.setDataSource(dataSource);
     await app.init();
     httpServer = app.getHttpServer();
+
+    // 🔹 Limpieza inicial
+    await limpiarDatos();
   });
 
   afterAll(async () => {
+    // 🔹 Limpieza final
+    await limpiarDatos();
     await app.close();
   });
 
   it('Debería crear una marca base', async () => {
     const res = await request(httpServer)
       .post('/marca')
-      .send({ nombre: 'Marca Test'})
+      .send({ nombre: `Marca Test ${Date.now()}` })
       .expect(201);
 
     marcaId = res.body.id;
@@ -46,7 +60,6 @@ describe('Producto (Integración)', () => {
 
   it('Debería crear una línea base (dependencia)', async () => {
     const res = await request(httpServer)
-      // 👇 cambia a /lineas si tu controlador usa plural
       .post('/lineas')
       .send({
         nombre: 'Línea Test',
