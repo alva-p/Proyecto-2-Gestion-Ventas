@@ -94,4 +94,5 @@ export class FacturaService {
     const factura = await this.findOne(id);
     return this.facturaRepository.remove(factura);
   }
+  
 }
