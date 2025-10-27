@@ -29,48 +29,28 @@ import { FacturaModule } from './factura/factura.module';
 
 @Module({
   imports: [
-    // ✅ Carga global del ConfigModule
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: false, // usa .env localmente; Render usa variables de entorno
     }),
 
-    // ✅ Conexión via Supabase Transaction Pooler (puerto 6543) - IPv4 compatible
     TypeOrmModule.forRoot({
-  type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '6543', 10),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  entities: [
-    Producto,
-    Proveedor,
-    User,
-    Venta,
-    Rol,
-    Auditoria,
-    Linea,
-    Marca,
-  ],
-  autoLoadEntities: true,
-  migrations: ['dist/migrations/*.js'],
-  synchronize: false,
-  ssl: { 
-    rejectUnauthorized: false 
-  },
-  extra: { 
-    max: 10, // aumentado para mejor estabilidad
-    connectionTimeoutMillis: 30000, // 30 segundos
-    idleTimeoutMillis: 10000, // 10 segundos
-    keepAlive: true, // mantiene la conexión activa
-    keepAliveInitialDelayMillis: 10000,
-  },
-}),
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '6543', 10),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
+      autoLoadEntities: true,
+      synchronize: false,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      extra: {
+        max: 5,
+      },
+    }),
 
-
-
-    // 🔹 Módulos de tu aplicación
     ProductoModule,
     ProveedorModule,
     UsersModule,
