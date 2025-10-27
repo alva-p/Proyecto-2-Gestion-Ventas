@@ -138,14 +138,18 @@ export function SalesRegistration({ user }: SalesRegistrationProps) {
       const total = calculateTotal();
       
       const ventaData = {
-        usuario_id: parseInt(user.id),
-        productos: selectedProducts.map(item => item.productId),
-        importe_total: Number(total), // El total ya es un número
-        notas: currentSale.notes || undefined,
-        cliente_nombre: currentSale.customerName,
-        cliente_documento: currentSale.customerDocument,
-        tipo: currentSale.invoiceType
-      };
+  usuario_id: parseInt(user.id),
+  productos: selectedProducts.map(item => ({
+    productoId: item.productId,
+    cantidad: item.quantity,
+    precio_unitario: item.unitPrice
+  })),
+  importe_total: Number(total),
+  notas: currentSale.notes || undefined,
+  cliente_nombre: currentSale.customerName,
+  cliente_documento: currentSale.customerDocument,
+  tipo: currentSale.invoiceType
+};
 
       console.log('📦 Datos a enviar:', ventaData);
       console.log('👤 User ID:', user.id, 'tipo:', typeof user.id);

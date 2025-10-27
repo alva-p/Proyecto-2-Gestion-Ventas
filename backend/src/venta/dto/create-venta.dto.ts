@@ -1,11 +1,15 @@
-import { IsArray, IsInt, IsOptional, IsString, IsNumber, IsNotEmpty, Length, IsIn} from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, IsNumber, IsNotEmpty, Length, IsIn, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ProductoVentaDto } from './producto-venta.dto';
 
 export class CreateVentaDto {
   @IsInt()
   usuario_id: number; 
 
   @IsArray()
-  productos: number[]; 
+  @ValidateNested({ each: true })
+  @Type(() => ProductoVentaDto)
+  productos: ProductoVentaDto[];
 
   @IsOptional()
   @IsString()
