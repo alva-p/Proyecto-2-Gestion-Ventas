@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import 'reflect-metadata';
-import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ExistsPipe } from './pipes/exists.pipe';
@@ -11,29 +10,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT ?? 3000;
 
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://proyecto-2-gestion-ventas.vercel.app',
-  ];
-
-  // Agregar FRONTEND_URL si está definida
-  if (process.env.FRONTEND_URL) {
-    allowedOrigins.push(process.env.FRONTEND_URL);
-  }
-
-  const corsOptions: CorsOptions = {
-    origin: (origin, callback) => {
-      // Permitir peticiones sin origen (como Postman) o desde orígenes permitidos
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  };
-  app.enableCors(corsOptions);
+  // ✅ CORS simple - permite todos los orígenes
+  app.enableCors();
 
   // Pipe global de validación y transformación
   app.useGlobalPipes(
@@ -53,7 +31,7 @@ async function bootstrap() {
   await dataSource.runMigrations();
   console.log('✅ Migraciones aplicadas automáticamente');
 
-  await app.listen(port);
-  console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Servidor corriendo en http://0.0.0.0:${port}`);
 }
 bootstrap();

@@ -19,5 +19,3 @@ services:
         value: postgres
       - key: PORT
         value: 3000
-      - key: FRONTEND_URL
-        sync: false # Configurar manualmente en Render Dashboard con tu URL de Vercel
