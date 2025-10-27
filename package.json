@@ -8,6 +8,8 @@
     "passport-jwt": "^4.0.1"
   },
   "devDependencies": {
-    "eslint": "^9.38.0"
+    "@types/jest": "^30.0.0",
+    "eslint": "^9.38.0",
+    "ts-jest": "^29.4.5"
   }
 }

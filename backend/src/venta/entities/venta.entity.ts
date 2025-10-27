@@ -9,9 +9,9 @@ import {
   JoinTable,
   OneToOne,
 } from 'typeorm';
-import { User } from 'src/users/entities/users.entity';
-import { Producto } from 'src/producto/entities/producto.entity';
-import { Factura } from 'src/factura/entities/factura.entity';
+import { User } from '../../users/entities/users.entity';
+import { Producto } from '../../producto/entities/producto.entity';
+import { Factura } from '../../factura/entities/factura.entity';
 
 @Entity('venta')
 export class Venta {
