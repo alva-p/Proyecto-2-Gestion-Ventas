@@ -12,7 +12,6 @@ import { UsersModule } from './users/users.module';
 import { VentaModule } from './venta/venta.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './rol/rol.module';
-import { AuditoriaModule } from './auditoria/auditoria.module';
 import { LineaModule } from './linea/linea.module';
 import { MarcasModule } from './marcas/marcas.module';
 
@@ -22,7 +21,6 @@ import { Proveedor } from './proveedor/entities/proveedor.entity';
 import { User } from './users/entities/users.entity';
 import { Venta } from './venta/entities/venta.entity';
 import { Rol } from './rol/entities/rol.entity';
-import { Auditoria } from './auditoria/entities/auditoria.entity';
 import { Linea } from './linea/entities/linea.entity';
 import { Marca } from './marcas/entities/marca.entity';
 import { FacturaModule } from './factura/factura.module';
@@ -40,7 +38,7 @@ import { FacturaModule } from './factura/factura.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      entities: [Producto, Proveedor, User, Venta, Rol, Auditoria, Linea, Marca],
+      entities: [Producto, Proveedor, User, Venta, Rol, Linea, Marca],
       autoLoadEntities: true,
       synchronize: false,
       ssl: {
@@ -57,7 +55,6 @@ import { FacturaModule } from './factura/factura.module';
     VentaModule,
     AuthModule,
     RolesModule,
-    AuditoriaModule,
     LineaModule,
     MarcasModule,
     FacturaModule,

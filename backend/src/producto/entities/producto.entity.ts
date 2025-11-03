@@ -26,8 +26,8 @@ export class Producto {
   @Column('decimal', { precision: 10, scale: 2 })
   precio: number;
 
-  @ManyToOne(() => Linea, (linea) => linea.productos, { eager: true })
-  @JoinColumn({ name: 'lineaId' }) // 👈 crea FK lineaId → linea.id
+  @ManyToOne(() => Linea, (linea) => linea.productos, { eager: false })
+  @JoinColumn({ name: 'lineaId' })
   linea: Linea;
 
   // 👇 Relación N:N con proveedor

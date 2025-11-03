@@ -1,50 +1,31 @@
-// backend/src/linea/linea.service.ts
+// src/linea/linea.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Linea } from './entities/linea.entity';
+import { LineaRepository } from './linea.repository';
 import { CreateLineaDto } from './dto/create-linea.dto';
 import { UpdateLineaDto } from './dto/update-linea.dto';
 
 @Injectable()
 export class LineaService {
-  constructor(
-    @InjectRepository(Linea)
-    private readonly lineaRepository: Repository<Linea>,
-  ) {}
+  constructor(private readonly lineaRepo: LineaRepository) {}
 
   findAll() {
-    return this.lineaRepository.find({ relations: ['marca'] });
+    return this.lineaRepo.findAllWithMarca();
   }
 
-  findOne(id: number) {
-    return this.lineaRepository.findOne({ where: { id }, relations: ['marca'] });
+  async findOne(id: number) {
+    const linea = await this.lineaRepo.findOneWithMarca(id);
+    return linea ?? null;
   }
 
-  async create(createLineaDto: CreateLineaDto) {
-    const { marcaId, ...resto } = createLineaDto;
-  
-    // Buscar la marca correspondiente
-    const marca = await this.lineaRepository.manager.findOne('Marca', { where: { id: marcaId } });
-  
-    if (!marca) {
-      throw new Error(`La marca con ID ${marcaId} no existe`);
-    }
-  
-    // Crear la nueva línea vinculada a la marca
-    const nuevaLinea = this.lineaRepository.create({
-      ...resto,
-      marca,
-    });
-  
-    return this.lineaRepository.save(nuevaLinea);
+  create(dto: CreateLineaDto) {
+    return this.lineaRepo.createLinea(dto);
   }
 
-  update(id: number, updateLineaDto: UpdateLineaDto) {
-    return this.lineaRepository.update(id, updateLineaDto);
+  update(id: number, dto: UpdateLineaDto) {
+    return this.lineaRepo.updateLinea(id, dto);
   }
 
   remove(id: number) {
-    return this.lineaRepository.delete(id);
+    return this.lineaRepo.removeLinea(id);
   }
 }
